@@ -1229,6 +1229,31 @@ body {
   position: relative;
 }
 
+/* ── Carousel Mode Spacing Fix (Desktop & Mobile) ──────────────────── */
+.view-mode-carousel .collection-shelf-content {
+  min-height: auto;
+  padding-bottom: 1.5rem;
+}
+
+.view-mode-carousel .shelf-grid-wrapper {
+  flex: none;
+  margin-bottom: 0;
+}
+
+.view-mode-carousel .embla-outer {
+  padding-bottom: 0;
+}
+
+.view-mode-carousel .carousel-bottom-controls {
+  padding: 1rem 0 0 0;
+}
+
+.view-mode-carousel .site-footer {
+  margin-top: 1.5rem;
+  padding: 1rem 0 2rem 0;
+  border-top: none !important;
+}
+
 /* ==========================================================================
    Embla Carousel — Scratch Build
    ========================================================================== */
@@ -1498,6 +1523,31 @@ body {
     margin-top: 0;
     width: 100%;
     text-align: center;
+  }
+
+  .view-mode-carousel .collection-shelf-content {
+    min-height: auto;
+    padding-top: 5.5rem;
+    padding-bottom: 1rem;
+  }
+
+  .view-mode-carousel .shelf-grid-wrapper {
+    flex: none;
+    margin-bottom: 0;
+  }
+
+  .view-mode-carousel .embla-outer {
+    padding-bottom: 0;
+  }
+
+  .view-mode-carousel .embla {
+    padding: 0.5rem 0 0.5rem 0;
+  }
+
+  .view-mode-carousel .site-footer {
+    margin-top: 1.25rem;
+    padding: 0.75rem 0 1.5rem 0;
+    border-top: none !important;
   }
 
   .site-header {
