@@ -1477,6 +1477,61 @@ body {
   .carousel-bottom-controls {
     display: none;                 /* Hide navigation arrow buttons on mobile */
   }
+
+  /* Full-Screen Mobile Modal Overlay for Details */
+  .detail-drawer-container {
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-left: none;
+    box-shadow: none;
+    z-index: 1000;
+  }
+
+  .drawer-header-bar {
+    padding: 1rem 1.25rem 0.75rem 1.25rem;
+    position: sticky;
+    top: 0;
+    background-color: var(--bg-drawer);
+    border-bottom: 1px solid var(--border-color);
+    z-index: 20;
+  }
+
+  .drawer-scroll-content {
+    padding: 1.25rem 1.25rem 4rem 1.25rem;
+    gap: 1.5rem;
+  }
+
+  .movie-detail-top {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .drawer-poster-frame {
+    max-width: 200px;
+    margin: 0 auto;
+  }
+
+  .drawer-movie-title {
+    font-size: 1.8rem;
+    text-align: center;
+  }
+
+  .drawer-metadata-line {
+    justify-content: center;
+  }
+
+  .drawer-director {
+    text-align: center;
+  }
+
+  .drawer-kind-pill {
+    align-self: center;
+  }
 }
 
 /* Site Footer */
