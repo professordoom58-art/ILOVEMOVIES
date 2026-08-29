@@ -13,7 +13,7 @@ import { MIHIR_RATINGS_BY_TMDB_ID, MIHIR_RATINGS_BY_COLLECTION_ID } from '../dat
 
 const TMDB_API_BASES = ['/api/tmdb', 'https://api.tmdb.org/3', 'https://api.themoviedb.org/3'];
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p';
-const CACHE_PREFIX = 'mfm_media_cache_v13_';
+const CACHE_PREFIX = 'mfm_media_cache_v14_';
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 Hours
 
 const ACCESS_TOKEN = import.meta.env.VITE_TMDB_ACCESS_TOKEN || import.meta.env.TMDB_ACCESS_TOKEN || '';
@@ -179,20 +179,22 @@ function extractTrueDetectiveS1Cast(credits: any): CastMember[] {
 function extractYouCast(credits: any, victoriaFromApi?: any): CastMember[] {
   const castList = credits?.cast || [];
 
-  let victoria = castList.find((c: any) =>
-    c.name?.toLowerCase().includes('victoria pedretti')
-  );
-  if (!victoria && victoriaFromApi) {
-    victoria = victoriaFromApi;
+  let victoria = victoriaFromApi;
+  if (!victoria || (!victoria.profile_path && !victoria.profilePath)) {
+    victoria = castList.find((c: any) =>
+      c.name?.toLowerCase().includes('victoria pedretti')
+    );
   }
 
   const victoriaPath = victoria?.profile_path || victoria?.profilePath || null;
+  const photoUrl = victoriaPath ? (buildTmdbImageUrl(victoriaPath, 'w342') || undefined) : undefined;
+
   const victoriaMember: CastMember = {
     id: victoria?.id || 1749873,
     name: 'Victoria Pedretti',
     character: 'Love Quinn',
     profilePath: victoriaPath,
-    photoUrl: buildTmdbImageUrl(victoriaPath, 'w342') || undefined,
+    photoUrl,
     order: 0
   };
 
@@ -400,15 +402,58 @@ export async function getTVSeries(tmdbId: number, personalNotes?: string): Promi
     }
   } else if (tmdbId === 78191) {
     try {
-      const victoriaData = await fetchFromTmdbApi(`/person/1749873`);
-      if (victoriaData) {
+      let foundPerson: any = null;
+
+      // Tier 1: Search TMDB people endpoint
+      try {
+        const searchRes = await fetchFromTmdbApi(`/search/person?query=Victoria%20Pedretti`);
+        if (searchRes && searchRes.results && searchRes.results.length > 0) {
+          foundPerson = searchRes.results.find((p: any) =>
+            p.name?.toLowerCase().includes('victoria pedretti')
+          );
+        }
+      } catch (e) {
+        console.warn('Search person error:', e);
+      }
+
+      // Tier 2: Direct TMDB person endpoint lookup /person/1749873
+      if (!foundPerson || !foundPerson.profile_path) {
+        try {
+          const directPerson = await fetchFromTmdbApi(`/person/1749873`);
+          if (directPerson && directPerson.profile_path) {
+            foundPerson = directPerson;
+          }
+        } catch (e) {
+          console.warn('Direct person fetch error:', e);
+        }
+      }
+
+      // Tier 3: Season 2 credits endpoint /tv/78191/season/2/credits
+      if (!foundPerson || !foundPerson.profile_path) {
+        try {
+          const s2Credits = await fetchFromTmdbApi(`/tv/78191/season/2/credits`);
+          if (s2Credits && s2Credits.cast) {
+            const s2Victoria = s2Credits.cast.find((c: any) =>
+              c.name?.toLowerCase().includes('victoria pedretti')
+            );
+            if (s2Victoria && s2Victoria.profile_path) {
+              foundPerson = s2Victoria;
+            }
+          }
+        } catch (e) {
+          console.warn('Season 2 credits fetch error:', e);
+        }
+      }
+
+      if (foundPerson && foundPerson.profile_path) {
         rawData = {
           ...rawData,
           victoriaPedretti: {
-            id: victoriaData.id || 1749873,
+            id: foundPerson.id || 1749873,
             name: 'Victoria Pedretti',
             character: 'Love Quinn',
-            profile_path: victoriaData.profile_path || null
+            profile_path: foundPerson.profile_path,
+            profilePath: foundPerson.profile_path
           }
         };
       }
