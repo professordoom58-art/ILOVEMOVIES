@@ -21,10 +21,9 @@ export const CarouselGrid: React.FC<CarouselGridProps> = ({
 }) => {
   const [emblaRef, emblaApi] = useEmblaCarousel({
     axis: 'x',
-    dragFree: true,
     loop: true,
-    align: 'start',
-    containScroll: false,
+    align: 'center',
+    skipSnaps: true,
   });
 
   const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
