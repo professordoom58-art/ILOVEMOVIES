@@ -84,7 +84,7 @@ body {
 }
 
 .collection-shelf-content {
-  padding: 2.5rem 2.5rem 4rem 2.5rem;
+  padding: 8.5rem 2.5rem 4rem 2.5rem;
   max-width: 1400px;
   width: 100%;
   margin: 0 auto;
@@ -95,21 +95,31 @@ body {
 }
 
 .drawer-active .collection-shelf-content {
-  padding: 2.5rem 1.75rem 4rem 1.75rem;
+  padding: 8.5rem 1.75rem 4rem 1.75rem;
   max-width: 100%;
 }
 
-/* Header — Sticky with solid background */
+/* Header — Fixed permanently to viewport top */
 .site-header {
-  position: sticky;
+  position: fixed;
   top: 0;
-  z-index: 100;
+  left: 0;
+  right: 0;
+  z-index: 400;
   background-color: var(--bg-collection);
-  padding: 1.5rem 0 0.5rem 0;
-  margin-bottom: 2rem;
+  padding: 1.5rem 2.5rem 0.5rem 2.5rem;
+  margin-bottom: 0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  transition: right var(--transition-smooth);
+}
+
+.drawer-active .site-header {
+  right: var(--drawer-width);
 }
 
 .header-top-row {
+  max-width: 1400px;
+  margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1447,13 +1457,24 @@ body {
 /* ── Mobile Carousel & Details Modal (<= 768px) ────────────────────── */
 @media (max-width: 768px) {
   .collection-shelf-content {
-    padding: 1.25rem 1.25rem 3rem 1.25rem;
+    padding: 6rem 1.25rem 3rem 1.25rem;
     width: 100%;
     max-width: 100%;
   }
 
   .site-header {
-    padding: 0 0 0.5rem 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 1rem 1.25rem 0.5rem 1.25rem;
+    background-color: var(--bg-collection);
+    z-index: 400;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  }
+
+  .drawer-active .site-header {
+    right: 0;
   }
 
   .site-title {
