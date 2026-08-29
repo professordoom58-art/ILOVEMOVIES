@@ -34,6 +34,7 @@ export const CarouselGrid: React.FC<CarouselGridProps> = ({
   useEffect(() => {
     let scrollTimeout: number | undefined;
     let isTouching = false;
+    let isProgrammaticSnapping = false;
 
     const handleTouchStart = () => {
       isTouching = true;
@@ -46,27 +47,30 @@ export const CarouselGrid: React.FC<CarouselGridProps> = ({
     };
 
     const scheduleSnap = () => {
+      if (isProgrammaticSnapping || isTouching) return;
       if (scrollTimeout) window.clearTimeout(scrollTimeout);
       scrollTimeout = window.setTimeout(() => {
         performVerticalSnap();
-      }, 200);
+      }, 150);
     };
 
     const handleScroll = () => {
-      if (isTouching) return;
+      if (isTouching || isProgrammaticSnapping) return;
       scheduleSnap();
     };
 
     const performVerticalSnap = () => {
       if (window.innerWidth > 768) return; // Mobile Carousel only!
-      if (isTouching) return;
+      if (isTouching || isProgrammaticSnapping) return;
 
-      const header = document.querySelector('.site-header');
-      const headerHeight = header ? header.getBoundingClientRect().height : 70;
-      const topBound = headerHeight;
-      const bottomBound = window.innerHeight;
-      const usableCenter = topBound + (bottomBound - topBound) / 2;
+      const fixedHeader = document.querySelector('.site-header');
+      const headerHeight = fixedHeader ? fixedHeader.getBoundingClientRect().height : 70;
 
+      const usableTop = headerHeight;
+      const usableBottom = window.innerHeight;
+      const usableCenter = usableTop + (usableBottom - usableTop) / 2;
+
+      // Identify every visible movie card in the mobile carousel
       const cardElements = Array.from(
         document.querySelectorAll('.embla__slide .cc')
       ) as HTMLElement[];
@@ -74,32 +78,39 @@ export const CarouselGrid: React.FC<CarouselGridProps> = ({
       if (cardElements.length === 0) return;
 
       let maxVisibleArea = 0;
-      let targetCardCenter = 0;
-      let targetCard: HTMLElement | null = null;
+      let selectedCard: HTMLElement | null = null;
 
       for (const card of cardElements) {
         const rect = card.getBoundingClientRect();
-        const vTop = Math.max(rect.top, topBound);
-        const vBottom = Math.min(rect.bottom, bottomBound);
+        const vTop = Math.max(rect.top, usableTop);
+        const vBottom = Math.min(rect.bottom, usableBottom);
         const visibleHeight = Math.max(0, vBottom - vTop);
+        const visibleArea = visibleHeight * rect.width;
 
-        if (visibleHeight > maxVisibleArea) {
-          maxVisibleArea = visibleHeight;
-          targetCard = card;
-          targetCardCenter = rect.top + rect.height / 2;
+        if (visibleArea > maxVisibleArea) {
+          maxVisibleArea = visibleArea;
+          selectedCard = card;
         }
       }
 
-      if (!targetCard || maxVisibleArea === 0) return;
+      if (!selectedCard || maxVisibleArea === 0) return;
 
-      const offsetDiff = targetCardCenter - usableCenter;
-      if (Math.abs(offsetDiff) < 6) return; // Ignore tiny subpixel offsets
+      const cardRect = selectedCard.getBoundingClientRect();
+      const cardCenter = cardRect.top + cardRect.height / 2;
+      const scrollAdjustment = cardCenter - usableCenter;
 
-      const targetScrollY = Math.max(0, window.scrollY + offsetDiff);
-      window.scrollTo({
-        top: targetScrollY,
+      if (Math.abs(scrollAdjustment) < 4) return; // Already centered within 4px
+
+      isProgrammaticSnapping = true;
+      window.scrollBy({
+        top: scrollAdjustment,
         behavior: 'smooth',
       });
+
+      // Temporarily disable snap listener during smooth scroll animation
+      window.setTimeout(() => {
+        isProgrammaticSnapping = false;
+      }, 400);
     };
 
     window.addEventListener('touchstart', handleTouchStart, { passive: true });
