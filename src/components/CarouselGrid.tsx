@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { MediaItem } from '../types/movie';
@@ -29,6 +29,92 @@ export const CarouselGrid: React.FC<CarouselGridProps> = ({
 
   const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
+
+  // Mobile Carousel Mode Only: Debounced Vertical Visibility Snap
+  useEffect(() => {
+    let scrollTimeout: number | undefined;
+    let isTouching = false;
+
+    const handleTouchStart = () => {
+      isTouching = true;
+      if (scrollTimeout) window.clearTimeout(scrollTimeout);
+    };
+
+    const handleTouchEnd = () => {
+      isTouching = false;
+      scheduleSnap();
+    };
+
+    const scheduleSnap = () => {
+      if (scrollTimeout) window.clearTimeout(scrollTimeout);
+      scrollTimeout = window.setTimeout(() => {
+        performVerticalSnap();
+      }, 200);
+    };
+
+    const handleScroll = () => {
+      if (isTouching) return;
+      scheduleSnap();
+    };
+
+    const performVerticalSnap = () => {
+      if (window.innerWidth > 768) return; // Mobile Carousel only!
+      if (isTouching) return;
+
+      const header = document.querySelector('.site-header');
+      const headerHeight = header ? header.getBoundingClientRect().height : 70;
+      const topBound = headerHeight;
+      const bottomBound = window.innerHeight;
+      const usableCenter = topBound + (bottomBound - topBound) / 2;
+
+      const cardElements = Array.from(
+        document.querySelectorAll('.embla__slide .cc')
+      ) as HTMLElement[];
+
+      if (cardElements.length === 0) return;
+
+      let maxVisibleArea = 0;
+      let targetCardCenter = 0;
+      let targetCard: HTMLElement | null = null;
+
+      for (const card of cardElements) {
+        const rect = card.getBoundingClientRect();
+        const vTop = Math.max(rect.top, topBound);
+        const vBottom = Math.min(rect.bottom, bottomBound);
+        const visibleHeight = Math.max(0, vBottom - vTop);
+
+        if (visibleHeight > maxVisibleArea) {
+          maxVisibleArea = visibleHeight;
+          targetCard = card;
+          targetCardCenter = rect.top + rect.height / 2;
+        }
+      }
+
+      if (!targetCard || maxVisibleArea === 0) return;
+
+      const offsetDiff = targetCardCenter - usableCenter;
+      if (Math.abs(offsetDiff) < 6) return; // Ignore tiny subpixel offsets
+
+      const targetScrollY = Math.max(0, window.scrollY + offsetDiff);
+      window.scrollTo({
+        top: targetScrollY,
+        behavior: 'smooth',
+      });
+    };
+
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd, { passive: true });
+    window.addEventListener('touchcancel', handleTouchEnd, { passive: true });
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    return () => {
+      if (scrollTimeout) window.clearTimeout(scrollTimeout);
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchend', handleTouchEnd);
+      window.removeEventListener('touchcancel', handleTouchEnd);
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   if (isLoading) {
     return (
