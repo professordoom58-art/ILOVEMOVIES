@@ -13,7 +13,7 @@ import { MIHIR_RATINGS_BY_TMDB_ID, MIHIR_RATINGS_BY_COLLECTION_ID } from '../dat
 
 const TMDB_API_BASES = ['/api/tmdb', 'https://api.tmdb.org/3', 'https://api.themoviedb.org/3'];
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p';
-const CACHE_PREFIX = 'mfm_media_cache_v10_';
+const CACHE_PREFIX = 'mfm_media_cache_v11_';
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 Hours
 
 const ACCESS_TOKEN = import.meta.env.VITE_TMDB_ACCESS_TOKEN || import.meta.env.TMDB_ACCESS_TOKEN || '';
@@ -148,6 +148,34 @@ function normalizeTMDBMovie(raw: TMDBMovieDetailsRaw, personalNotes?: string): M
   };
 }
 
+const TRUE_DETECTIVE_S1_CAST_SPEC = [
+  { name: 'Matthew McConaughey', character: 'Rust Cohle' },
+  { name: 'Woody Harrelson', character: 'Marty Hart' },
+  { name: 'Michelle Monaghan', character: 'Maggie Hart' },
+  { name: 'Michael Potts', character: 'Detective Maynard Gilbough' },
+  { name: 'Tory Kittles', character: 'Detective Thomas Papania' }
+];
+
+function extractTrueDetectiveS1Cast(credits: any): CastMember[] {
+  const castList = credits?.cast || [];
+  return TRUE_DETECTIVE_S1_CAST_SPEC.map((spec, index) => {
+    const found = castList.find((c: any) =>
+      c.name?.toLowerCase().includes(spec.name.toLowerCase()) ||
+      spec.name.toLowerCase().includes(c.name?.toLowerCase())
+    );
+
+    const profilePath = found?.profile_path || null;
+    return {
+      id: found?.id || 1000 + index,
+      name: spec.name,
+      character: spec.character,
+      profilePath,
+      photoUrl: buildTmdbImageUrl(profilePath, 'w342') || undefined,
+      order: index
+    };
+  });
+}
+
 /**
  * Normalizes raw TMDB TV API response into application TVSeries structure.
  */
@@ -162,6 +190,37 @@ function normalizeTMDBTV(raw: any, personalNotes?: string): TVSeries {
   const backdropW1280 = buildTmdbImageUrl(raw.backdrop_path, 'original') || undefined;
 
   const creatorNames = raw.created_by?.map((c: any) => c.name).join(', ') || undefined;
+
+  if (raw.id === 46648) {
+    return {
+      kind: 'tv',
+      tmdbId: 46648,
+      title: 'True Detective',
+      year: 2014,
+      firstAirDate: '2014-01-12',
+      formattedFirstAirDate: 'January 12, 2014',
+      lastAirDate: '2014-03-09',
+      seasonsCount: 1,
+      episodesCount: 8,
+      creator: creatorNames || 'Nic Pizzolatto',
+      overview:
+        'In 2012, Louisiana State Police Detectives Rust Cohle and Marty Hart are brought in to revisit a homicide case they worked in 1995. As the inquiry unfolds in the present day through separate interrogations, the two former detectives narrate the story of their investigation, reopening unhealed wounds, and drawing into question their supposed solving of a bizarre ritualistic murder in 1995.',
+      posterPath: raw.poster_path || null,
+      poster: posterW500,
+      largePoster: posterW780 || posterW500,
+      backdrop: backdropW1280,
+      status: 'Ended',
+      cast: extractTrueDetectiveS1Cast(raw.credits),
+      scores: {
+        mihirScore: savedReview?.mihirScore ?? MIHIR_RATINGS_BY_TMDB_ID[46648] ?? 10,
+        imdbScore: raw.vote_average ? `${Math.round(raw.vote_average * 10) / 10} / 10` : '8.9 / 10',
+        imdbVotes: raw.vote_count ? `${raw.vote_count.toLocaleString()} votes` : '630,000 votes',
+        rottenTomatoes: '91%'
+      },
+      watchLinks: getWatchLinksForMovie(46648),
+      personalNotes
+    };
+  }
 
   return {
     kind: 'tv',
