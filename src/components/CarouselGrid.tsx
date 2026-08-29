@@ -30,38 +30,46 @@ export const CarouselGrid: React.FC<CarouselGridProps> = ({
   const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
 
-  // Mobile Carousel Mode Only: Debounced Vertical Visibility Snap
+  // Mobile Carousel Mode Only: CSS Scroll Snap + scrollend Alignment Hook
   useEffect(() => {
-    let scrollTimeout: number | undefined;
+    document.documentElement.classList.add('mobile-carousel-mode');
+    document.body.classList.add('mobile-carousel-mode');
+
+    let scrollDebounceTimeout: number | undefined;
     let isTouching = false;
-    let isProgrammaticSnapping = false;
+    let isAdjusting = false;
 
     const handleTouchStart = () => {
       isTouching = true;
-      if (scrollTimeout) window.clearTimeout(scrollTimeout);
+      if (scrollDebounceTimeout) window.clearTimeout(scrollDebounceTimeout);
     };
 
     const handleTouchEnd = () => {
       isTouching = false;
-      scheduleSnap();
+      scheduleCheck();
     };
 
-    const scheduleSnap = () => {
-      if (isProgrammaticSnapping || isTouching) return;
-      if (scrollTimeout) window.clearTimeout(scrollTimeout);
-      scrollTimeout = window.setTimeout(() => {
-        performVerticalSnap();
-      }, 150);
+    const scheduleCheck = () => {
+      if (isAdjusting || isTouching) return;
+      if (scrollDebounceTimeout) window.clearTimeout(scrollDebounceTimeout);
+      scrollDebounceTimeout = window.setTimeout(() => {
+        onScrollEnd();
+      }, 140);
     };
 
     const handleScroll = () => {
-      if (isTouching || isProgrammaticSnapping) return;
-      scheduleSnap();
+      if (isTouching || isAdjusting) return;
+      scheduleCheck();
     };
 
-    const performVerticalSnap = () => {
+    const handleNativeScrollEnd = () => {
+      if (isTouching || isAdjusting) return;
+      onScrollEnd();
+    };
+
+    const onScrollEnd = () => {
       if (window.innerWidth > 768) return; // Mobile Carousel only!
-      if (isTouching || isProgrammaticSnapping) return;
+      if (isTouching || isAdjusting) return;
 
       const fixedHeader = document.querySelector('.site-header');
       const headerHeight = fixedHeader ? fixedHeader.getBoundingClientRect().height : 70;
@@ -99,31 +107,40 @@ export const CarouselGrid: React.FC<CarouselGridProps> = ({
       const cardCenter = cardRect.top + cardRect.height / 2;
       const scrollAdjustment = cardCenter - usableCenter;
 
-      if (Math.abs(scrollAdjustment) < 4) return; // Already centered within 4px
+      if (Math.abs(scrollAdjustment) < 4) return; // Centered within 4px
 
-      isProgrammaticSnapping = true;
+      isAdjusting = true;
       window.scrollBy({
         top: scrollAdjustment,
         behavior: 'smooth',
       });
 
-      // Temporarily disable snap listener during smooth scroll animation
       window.setTimeout(() => {
-        isProgrammaticSnapping = false;
-      }, 400);
+        isAdjusting = false;
+      }, 350);
     };
+
+    const supportsScrollEnd = 'onscrollend' in window;
 
     window.addEventListener('touchstart', handleTouchStart, { passive: true });
     window.addEventListener('touchend', handleTouchEnd, { passive: true });
     window.addEventListener('touchcancel', handleTouchEnd, { passive: true });
     window.addEventListener('scroll', handleScroll, { passive: true });
+    if (supportsScrollEnd) {
+      window.addEventListener('scrollend', handleNativeScrollEnd, { passive: true });
+    }
 
     return () => {
-      if (scrollTimeout) window.clearTimeout(scrollTimeout);
+      document.documentElement.classList.remove('mobile-carousel-mode');
+      document.body.classList.remove('mobile-carousel-mode');
+      if (scrollDebounceTimeout) window.clearTimeout(scrollDebounceTimeout);
       window.removeEventListener('touchstart', handleTouchStart);
       window.removeEventListener('touchend', handleTouchEnd);
       window.removeEventListener('touchcancel', handleTouchEnd);
       window.removeEventListener('scroll', handleScroll);
+      if (supportsScrollEnd) {
+        window.removeEventListener('scrollend', handleNativeScrollEnd);
+      }
     };
   }, []);
 

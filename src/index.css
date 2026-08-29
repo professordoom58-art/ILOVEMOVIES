@@ -1469,6 +1469,23 @@ body {
     max-width: 100%;
   }
 
+  /* Native Vertical CSS Scroll Snap — Mobile Carousel Mode Only */
+  html.mobile-carousel-mode,
+  body.mobile-carousel-mode {
+    scroll-snap-type: y proximity;
+    scroll-padding-top: 80px;
+  }
+
+  .mobile-carousel-mode .embla__slide .cc {
+    scroll-snap-align: center;
+    scroll-snap-stop: normal;
+  }
+
+  .mobile-carousel-mode .collection-shelf-content {
+    padding-top: 5.5rem;
+    padding-bottom: 45vh;
+  }
+
   .site-header {
     position: fixed;
     top: 0;
