@@ -42,7 +42,7 @@ export const Scoreboard: React.FC<ScoreboardProps> = ({ scores }) => {
 
       {/* Column 3: Rotten Tomatoes */}
       <div className="score-col">
-        <span className="score-label">ROTTEN TOMATOES</span>
+        <span className="score-label">ROTTEN TOM.</span>
         <div className="score-value-row">
           {scores.rottenTomatoes ? (
             <>
