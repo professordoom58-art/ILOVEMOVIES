@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { MediaItem } from '../types/movie';
@@ -30,101 +30,7 @@ export const CarouselGrid: React.FC<CarouselGridProps> = ({
   const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
 
-  // Mobile Carousel Mode Only: Deterministic Vertical Snap to Usable Viewport Center
-  useEffect(() => {
-    let scrollTimeout: number | undefined;
-    let isTouching = false;
-    let isProgrammaticSnapping = false;
 
-    const handleTouchStart = () => {
-      isTouching = true;
-      if (scrollTimeout) window.clearTimeout(scrollTimeout);
-    };
-
-    const handleTouchEnd = () => {
-      isTouching = false;
-      scheduleSnap();
-    };
-
-    const scheduleSnap = () => {
-      if (isProgrammaticSnapping || isTouching) return;
-      if (scrollTimeout) window.clearTimeout(scrollTimeout);
-      scrollTimeout = window.setTimeout(() => {
-        performVerticalSnap();
-      }, 150);
-    };
-
-    const handleScroll = () => {
-      if (isTouching || isProgrammaticSnapping) return;
-      scheduleSnap();
-    };
-
-    const performVerticalSnap = () => {
-      if (window.innerWidth > 768) return; // Mobile Carousel mode only!
-      if (isTouching || isProgrammaticSnapping) return;
-
-      const header = document.querySelector('.site-header');
-      const headerHeight = header ? header.getBoundingClientRect().height : 70;
-      const usableTop = headerHeight;
-      const usableBottom = window.innerHeight;
-      const usableCenter = usableTop + (usableBottom - usableTop) / 2;
-
-      // Query all rendered carousel cards in the DOM
-      const cards = Array.from(
-        document.querySelectorAll('.embla__slide .cc')
-      ) as HTMLElement[];
-
-      if (cards.length === 0) return;
-
-      let maxVisibleArea = 0;
-      let targetCard: HTMLElement | null = null;
-
-      for (const card of cards) {
-        const rect = card.getBoundingClientRect();
-        const vTop = Math.max(rect.top, usableTop);
-        const vBottom = Math.min(rect.bottom, usableBottom);
-        const visibleHeight = Math.max(0, vBottom - vTop);
-        const visibleArea = visibleHeight * rect.width;
-
-        if (visibleArea > maxVisibleArea) {
-          maxVisibleArea = visibleArea;
-          targetCard = card;
-        }
-      }
-
-      if (!targetCard || maxVisibleArea === 0) return;
-
-      const targetRect = targetCard.getBoundingClientRect();
-      const cardCenter = targetRect.top + targetRect.height / 2;
-      const delta = cardCenter - usableCenter;
-
-      if (Math.abs(delta) < 4) return; // Already centered within 4px
-
-      isProgrammaticSnapping = true;
-
-      window.scrollBy({
-        top: delta,
-        behavior: 'smooth',
-      });
-
-      window.setTimeout(() => {
-        isProgrammaticSnapping = false;
-      }, 400);
-    };
-
-    window.addEventListener('touchstart', handleTouchStart, { passive: true });
-    window.addEventListener('touchend', handleTouchEnd, { passive: true });
-    window.addEventListener('touchcancel', handleTouchEnd, { passive: true });
-    window.addEventListener('scroll', handleScroll, { passive: true });
-
-    return () => {
-      if (scrollTimeout) window.clearTimeout(scrollTimeout);
-      window.removeEventListener('touchstart', handleTouchStart);
-      window.removeEventListener('touchend', handleTouchEnd);
-      window.removeEventListener('touchcancel', handleTouchEnd);
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, []);
 
   if (isLoading) {
     return (
