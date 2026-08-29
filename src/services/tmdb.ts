@@ -13,7 +13,7 @@ import { MIHIR_RATINGS_BY_TMDB_ID, MIHIR_RATINGS_BY_COLLECTION_ID } from '../dat
 
 const TMDB_API_BASES = ['/api/tmdb', 'https://api.tmdb.org/3', 'https://api.themoviedb.org/3'];
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p';
-const CACHE_PREFIX = 'mfm_media_cache_v11_';
+const CACHE_PREFIX = 'mfm_media_cache_v12_';
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 Hours
 
 const ACCESS_TOKEN = import.meta.env.VITE_TMDB_ACCESS_TOKEN || import.meta.env.TMDB_ACCESS_TOKEN || '';
@@ -349,7 +349,22 @@ export async function getTVSeries(tmdbId: number, personalNotes?: string): Promi
     console.warn('Cache read error:', e);
   }
 
-  const rawData = await fetchFromTmdbApi(`/tv/${tmdbId}?append_to_response=credits,external_ids`);
+  let rawData = await fetchFromTmdbApi(`/tv/${tmdbId}?append_to_response=credits,external_ids`);
+
+  if (tmdbId === 46648) {
+    try {
+      const s1Credits = await fetchFromTmdbApi(`/tv/46648/season/1/credits`);
+      if (s1Credits && s1Credits.cast) {
+        rawData = {
+          ...rawData,
+          credits: s1Credits
+        };
+      }
+    } catch (err) {
+      console.warn('Could not fetch True Detective Season 1 credits:', err);
+    }
+  }
+
   const normalizedTV = normalizeTMDBTV(rawData, personalNotes);
 
   try {
