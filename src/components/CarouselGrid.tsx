@@ -64,10 +64,10 @@ export const CarouselGrid: React.FC<CarouselGridProps> = ({
       if (isTouching || isProgrammaticSnapping) return;
 
       const header = document.querySelector('.site-header');
-      if (!header) return;
-
-      const headerHeight = header.getBoundingClientRect().height;
-      const viewportCenter = headerHeight + (window.innerHeight - headerHeight) / 2;
+      const headerHeight = header ? header.getBoundingClientRect().height : 70;
+      const usableTop = headerHeight;
+      const usableBottom = window.innerHeight;
+      const usableCenter = usableTop + (usableBottom - usableTop) / 2;
 
       // Query all rendered carousel cards in the DOM
       const cards = Array.from(
@@ -76,25 +76,29 @@ export const CarouselGrid: React.FC<CarouselGridProps> = ({
 
       if (cards.length === 0) return;
 
-      const target = cards.reduce<{ card: HTMLElement; center: number } | null>(
-        (closest, card) => {
-          const rect = card.getBoundingClientRect();
-          const center = rect.top + rect.height / 2;
+      let maxVisibleArea = 0;
+      let targetCard: HTMLElement | null = null;
 
-          if (!closest) return { card, center };
+      for (const card of cards) {
+        const rect = card.getBoundingClientRect();
+        const vTop = Math.max(rect.top, usableTop);
+        const vBottom = Math.min(rect.bottom, usableBottom);
+        const visibleHeight = Math.max(0, vBottom - vTop);
+        const visibleArea = visibleHeight * rect.width;
 
-          return Math.abs(center - viewportCenter) < Math.abs(closest.center - viewportCenter)
-            ? { card, center }
-            : closest;
-        },
-        null
-      );
+        if (visibleArea > maxVisibleArea) {
+          maxVisibleArea = visibleArea;
+          targetCard = card;
+        }
+      }
 
-      if (!target) return;
+      if (!targetCard || maxVisibleArea === 0) return;
 
-      const delta = target.center - viewportCenter;
+      const targetRect = targetCard.getBoundingClientRect();
+      const cardCenter = targetRect.top + targetRect.height / 2;
+      const delta = cardCenter - usableCenter;
 
-      if (Math.abs(delta) < 5) return; // Already centered within 5px
+      if (Math.abs(delta) < 4) return; // Already centered within 4px
 
       isProgrammaticSnapping = true;
 
