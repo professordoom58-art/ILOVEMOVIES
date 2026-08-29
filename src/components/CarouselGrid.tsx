@@ -30,117 +30,95 @@ export const CarouselGrid: React.FC<CarouselGridProps> = ({
   const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
 
-  // Mobile Carousel Mode Only: CSS Scroll Snap + scrollend Alignment Hook
+  // Mobile Carousel Mode Only: Deterministic Vertical Snap to Usable Viewport Center
   useEffect(() => {
-    document.documentElement.classList.add('mobile-carousel-mode');
-    document.body.classList.add('mobile-carousel-mode');
-
-    let scrollDebounceTimeout: number | undefined;
+    let scrollTimeout: number | undefined;
     let isTouching = false;
-    let isAdjusting = false;
+    let isProgrammaticSnapping = false;
 
     const handleTouchStart = () => {
       isTouching = true;
-      if (scrollDebounceTimeout) window.clearTimeout(scrollDebounceTimeout);
+      if (scrollTimeout) window.clearTimeout(scrollTimeout);
     };
 
     const handleTouchEnd = () => {
       isTouching = false;
-      scheduleCheck();
+      scheduleSnap();
     };
 
-    const scheduleCheck = () => {
-      if (isAdjusting || isTouching) return;
-      if (scrollDebounceTimeout) window.clearTimeout(scrollDebounceTimeout);
-      scrollDebounceTimeout = window.setTimeout(() => {
-        onScrollEnd();
-      }, 140);
+    const scheduleSnap = () => {
+      if (isProgrammaticSnapping || isTouching) return;
+      if (scrollTimeout) window.clearTimeout(scrollTimeout);
+      scrollTimeout = window.setTimeout(() => {
+        performVerticalSnap();
+      }, 150);
     };
 
     const handleScroll = () => {
-      if (isTouching || isAdjusting) return;
-      scheduleCheck();
+      if (isTouching || isProgrammaticSnapping) return;
+      scheduleSnap();
     };
 
-    const handleNativeScrollEnd = () => {
-      if (isTouching || isAdjusting) return;
-      onScrollEnd();
-    };
+    const performVerticalSnap = () => {
+      if (window.innerWidth > 768) return; // Mobile Carousel mode only!
+      if (isTouching || isProgrammaticSnapping) return;
 
-    const onScrollEnd = () => {
-      if (window.innerWidth > 768) return; // Mobile Carousel only!
-      if (isTouching || isAdjusting) return;
+      const header = document.querySelector('.site-header');
+      if (!header) return;
 
-      const fixedHeader = document.querySelector('.site-header');
-      const headerHeight = fixedHeader ? fixedHeader.getBoundingClientRect().height : 70;
+      const headerHeight = header.getBoundingClientRect().height;
+      const viewportCenter = headerHeight + (window.innerHeight - headerHeight) / 2;
 
-      const usableTop = headerHeight;
-      const usableBottom = window.innerHeight;
-      const usableCenter = usableTop + (usableBottom - usableTop) / 2;
-
-      // Identify every visible movie card in the mobile carousel
-      const cardElements = Array.from(
+      // Query all rendered carousel cards in the DOM
+      const cards = Array.from(
         document.querySelectorAll('.embla__slide .cc')
       ) as HTMLElement[];
 
-      if (cardElements.length === 0) return;
+      if (cards.length === 0) return;
 
-      let maxVisibleArea = 0;
-      let selectedCard: HTMLElement | null = null;
+      const target = cards.reduce<{ card: HTMLElement; center: number } | null>(
+        (closest, card) => {
+          const rect = card.getBoundingClientRect();
+          const center = rect.top + rect.height / 2;
 
-      for (const card of cardElements) {
-        const rect = card.getBoundingClientRect();
-        const vTop = Math.max(rect.top, usableTop);
-        const vBottom = Math.min(rect.bottom, usableBottom);
-        const visibleHeight = Math.max(0, vBottom - vTop);
-        const visibleArea = visibleHeight * rect.width;
+          if (!closest) return { card, center };
 
-        if (visibleArea > maxVisibleArea) {
-          maxVisibleArea = visibleArea;
-          selectedCard = card;
-        }
-      }
+          return Math.abs(center - viewportCenter) < Math.abs(closest.center - viewportCenter)
+            ? { card, center }
+            : closest;
+        },
+        null
+      );
 
-      if (!selectedCard || maxVisibleArea === 0) return;
+      if (!target) return;
 
-      const cardRect = selectedCard.getBoundingClientRect();
-      const cardCenter = cardRect.top + cardRect.height / 2;
-      const scrollAdjustment = cardCenter - usableCenter;
+      const delta = target.center - viewportCenter;
 
-      if (Math.abs(scrollAdjustment) < 4) return; // Centered within 4px
+      if (Math.abs(delta) < 5) return; // Already centered within 5px
 
-      isAdjusting = true;
+      isProgrammaticSnapping = true;
+
       window.scrollBy({
-        top: scrollAdjustment,
+        top: delta,
         behavior: 'smooth',
       });
 
       window.setTimeout(() => {
-        isAdjusting = false;
-      }, 350);
+        isProgrammaticSnapping = false;
+      }, 400);
     };
-
-    const supportsScrollEnd = 'onscrollend' in window;
 
     window.addEventListener('touchstart', handleTouchStart, { passive: true });
     window.addEventListener('touchend', handleTouchEnd, { passive: true });
     window.addEventListener('touchcancel', handleTouchEnd, { passive: true });
     window.addEventListener('scroll', handleScroll, { passive: true });
-    if (supportsScrollEnd) {
-      window.addEventListener('scrollend', handleNativeScrollEnd, { passive: true });
-    }
 
     return () => {
-      document.documentElement.classList.remove('mobile-carousel-mode');
-      document.body.classList.remove('mobile-carousel-mode');
-      if (scrollDebounceTimeout) window.clearTimeout(scrollDebounceTimeout);
+      if (scrollTimeout) window.clearTimeout(scrollTimeout);
       window.removeEventListener('touchstart', handleTouchStart);
       window.removeEventListener('touchend', handleTouchEnd);
       window.removeEventListener('touchcancel', handleTouchEnd);
       window.removeEventListener('scroll', handleScroll);
-      if (supportsScrollEnd) {
-        window.removeEventListener('scrollend', handleNativeScrollEnd);
-      }
     };
   }, []);
 

@@ -1480,23 +1480,6 @@ body {
     height: auto;
   }
 
-  /* Native Vertical CSS Scroll Snap — Mobile Carousel Mode Only */
-  html.mobile-carousel-mode,
-  body.mobile-carousel-mode {
-    scroll-snap-type: y proximity;
-    scroll-padding-top: 70px;
-  }
-
-  .mobile-carousel-mode .embla__slide .cc {
-    scroll-snap-align: center;
-    scroll-snap-stop: normal;
-  }
-
-  .mobile-carousel-mode .collection-shelf-content {
-    padding-top: 5.5rem;
-    padding-bottom: 1.5rem;
-  }
-
   .shelf-grid-wrapper {
     flex: none;
     margin-bottom: 0;
