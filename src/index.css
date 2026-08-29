@@ -1463,17 +1463,22 @@ body {
 
 /* ── Mobile Carousel & Details Modal (<= 768px) ────────────────────── */
 @media (max-width: 768px) {
+  .collection-main-container {
+    min-height: auto;
+  }
+
   .collection-shelf-content {
-    padding: 6rem 1.25rem 3rem 1.25rem;
+    padding: 5.5rem 1.25rem 1.5rem 1.25rem;
     width: 100%;
     max-width: 100%;
+    min-height: auto;
   }
 
   /* Native Vertical CSS Scroll Snap — Mobile Carousel Mode Only */
   html.mobile-carousel-mode,
   body.mobile-carousel-mode {
     scroll-snap-type: y proximity;
-    scroll-padding-top: 80px;
+    scroll-padding-top: 70px;
   }
 
   .mobile-carousel-mode .embla__slide .cc {
@@ -1483,7 +1488,16 @@ body {
 
   .mobile-carousel-mode .collection-shelf-content {
     padding-top: 5.5rem;
-    padding-bottom: 45vh;
+    padding-bottom: 1.5rem;
+  }
+
+  .shelf-grid-wrapper {
+    margin-bottom: 1rem;
+  }
+
+  .site-footer {
+    padding: 1.5rem 0 2rem 0;
+    margin-top: 1rem;
   }
 
   .site-header {
