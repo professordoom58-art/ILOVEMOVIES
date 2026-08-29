@@ -300,9 +300,15 @@ body {
   box-shadow: 0 0 0 1px var(--accent-terracotta), 0 8px 24px rgba(0, 0, 0, 0.6);
 }
 
-.movie-card:hover .poster-container,
-.movie-card:hover .poster-frame {
-  border-color: var(--border-focus);
+@media (hover: hover) {
+  .movie-card:hover {
+    transform: translateY(-2px);
+  }
+
+  .movie-card:hover .poster-container,
+  .movie-card:hover .poster-frame {
+    border-color: var(--border-focus);
+  }
 }
 
 .card-badge-pill {
@@ -1482,6 +1488,53 @@ body {
   .site-title {
     font-size: clamp(1.2rem, 5.5vw, 1.5rem);
     white-space: nowrap;
+  }
+
+  /* Disable Hover Animations/Transitions/Lifts on Mobile */
+  .movie-card,
+  .movie-card:hover,
+  .movie-card:active,
+  .movie-card:focus,
+  .cc,
+  .cc:hover,
+  .cc:active,
+  .cc:focus {
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .movie-card:hover .poster-container,
+  .movie-card:hover .poster-frame,
+  .movie-card:active .poster-container,
+  .movie-card:active .poster-frame,
+  .cc:hover .cc__poster,
+  .cc:active .cc__poster {
+    border-color: var(--border-color) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+  }
+
+  .movie-card.is-selected .poster-container,
+  .movie-card.is-selected .poster-frame,
+  .cc--selected .cc__poster {
+    border-color: var(--accent-terracotta) !important;
+  }
+
+  .movie-card:hover .poster-container img,
+  .movie-card:hover .poster-frame img,
+  .movie-card:hover .poster-image,
+  .movie-card:active .poster-container img,
+  .movie-card:active .poster-frame img,
+  .movie-card:active .poster-image,
+  .cc:hover .cc__img,
+  .cc:active .cc__img {
+    filter: brightness(0.96) !important;
+  }
+
+  .movie-card:hover .movie-card-title,
+  .movie-card:active .movie-card-title,
+  .cc:hover .cc__title,
+  .cc:active .cc__title {
+    color: var(--text-primary) !important;
   }
 
   .embla {
