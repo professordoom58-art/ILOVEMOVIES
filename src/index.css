@@ -1612,7 +1612,7 @@ body {
     position: sticky;
     top: 0;
     background-color: var(--bg-drawer);
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: none;
     z-index: 20;
   }
 
