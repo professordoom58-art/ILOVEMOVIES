@@ -1436,27 +1436,39 @@ body {
 
 /* ── Mobile Carousel (<= 768px) ────────────────────────────────────── */
 @media (max-width: 768px) {
-  .site-title {
-    font-size: clamp(1.25rem, 5vw, 1.6rem);
-    white-space: nowrap;
-  }
-
-  .embla__container {
-    padding-left: 1rem;
-  }
-
-  .embla__slide {
-    flex: 0 0 calc(50% - 0.5rem);  /* Exactly 2 movie cards visible at a time */
-    max-width: none;
-    padding-right: 0.75rem;
-  }
-
-  .carousel-bottom-controls {
-    display: none;                 /* Hide navigation arrow buttons on mobile */
+  .collection-shelf-content {
+    padding: 1rem 0 3rem 0;
+    width: 100%;
+    max-width: 100%;
   }
 
   .site-header {
     padding: 1rem 1rem 0.5rem 1rem;
+  }
+
+  .site-title {
+    font-size: clamp(1.2rem, 5vw, 1.5rem);
+    white-space: nowrap;
+  }
+
+  .embla {
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .embla__container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .embla__slide {
+    flex: 0 0 calc(50vw - 1.25rem);  /* Exactly 2 cards occupy full screen width with equal 1rem side margins */
+    max-width: none;
+    padding-right: 0.5rem;
+  }
+
+  .carousel-bottom-controls {
+    display: none;                 /* Hide navigation arrow buttons on mobile */
   }
 }
 
