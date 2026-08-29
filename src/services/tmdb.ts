@@ -13,7 +13,7 @@ import { MIHIR_RATINGS_BY_TMDB_ID, MIHIR_RATINGS_BY_COLLECTION_ID } from '../dat
 
 const TMDB_API_BASES = ['/api/tmdb', 'https://api.tmdb.org/3', 'https://api.themoviedb.org/3'];
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p';
-const CACHE_PREFIX = 'mfm_media_cache_v12_';
+const CACHE_PREFIX = 'mfm_media_cache_v13_';
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 Hours
 
 const ACCESS_TOKEN = import.meta.env.VITE_TMDB_ACCESS_TOKEN || import.meta.env.TMDB_ACCESS_TOKEN || '';
@@ -176,6 +176,41 @@ function extractTrueDetectiveS1Cast(credits: any): CastMember[] {
   });
 }
 
+function extractYouCast(credits: any, victoriaFromApi?: any): CastMember[] {
+  const castList = credits?.cast || [];
+
+  let victoria = castList.find((c: any) =>
+    c.name?.toLowerCase().includes('victoria pedretti')
+  );
+  if (!victoria && victoriaFromApi) {
+    victoria = victoriaFromApi;
+  }
+
+  const victoriaPath = victoria?.profile_path || victoria?.profilePath || null;
+  const victoriaMember: CastMember = {
+    id: victoria?.id || 1749873,
+    name: 'Victoria Pedretti',
+    character: 'Love Quinn',
+    profilePath: victoriaPath,
+    photoUrl: buildTmdbImageUrl(victoriaPath, 'w342') || undefined,
+    order: 0
+  };
+
+  const remaining = castList
+    .filter((c: any) => !c.name?.toLowerCase().includes('victoria pedretti'))
+    .slice(0, 5)
+    .map((c: any, idx: number) => ({
+      id: c.id,
+      name: c.name,
+      character: c.character || 'Self',
+      profilePath: c.profile_path || null,
+      photoUrl: buildTmdbImageUrl(c.profile_path, 'w342') || undefined,
+      order: idx + 1
+    }));
+
+  return [victoriaMember, ...remaining];
+}
+
 /**
  * Normalizes raw TMDB TV API response into application TVSeries structure.
  */
@@ -239,7 +274,7 @@ function normalizeTMDBTV(raw: any, personalNotes?: string): TVSeries {
     largePoster: posterW780 || posterW500,
     backdrop: backdropW1280,
     status: raw.status,
-    cast: extractCast(raw.credits, 6),
+    cast: raw.id === 78191 ? extractYouCast(raw.credits, raw.victoriaPedretti) : extractCast(raw.credits, 6),
     scores: {
       mihirScore: savedReview?.mihirScore ?? MIHIR_RATINGS_BY_TMDB_ID[raw.id] ?? null,
       imdbScore: raw.vote_average ? `${Math.round(raw.vote_average * 10) / 10} / 10` : null,
@@ -362,6 +397,23 @@ export async function getTVSeries(tmdbId: number, personalNotes?: string): Promi
       }
     } catch (err) {
       console.warn('Could not fetch True Detective Season 1 credits:', err);
+    }
+  } else if (tmdbId === 78191) {
+    try {
+      const victoriaData = await fetchFromTmdbApi(`/person/1749873`);
+      if (victoriaData) {
+        rawData = {
+          ...rawData,
+          victoriaPedretti: {
+            id: victoriaData.id || 1749873,
+            name: 'Victoria Pedretti',
+            character: 'Love Quinn',
+            profile_path: victoriaData.profile_path || null
+          }
+        };
+      }
+    } catch (err) {
+      console.warn('Could not fetch Victoria Pedretti person data:', err);
     }
   }
 
