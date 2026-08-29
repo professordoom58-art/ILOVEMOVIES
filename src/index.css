@@ -1518,6 +1518,11 @@ body {
     border-bottom: none !important;
   }
 
+  .view-mode-carousel .header-top-row {
+    padding-left: max(1.25rem, calc((100% - 320px) / 2));
+    padding-right: max(1.25rem, calc((100% - 320px) / 2));
+  }
+
   .drawer-active .site-header {
     right: 0;
   }

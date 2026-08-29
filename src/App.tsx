@@ -124,7 +124,7 @@ export function App() {
   };
 
   return (
-    <div className={`app-workspace ${selectedItem ? 'drawer-active' : 'drawer-closed'}`}>
+    <div className={`app-workspace ${selectedItem ? 'drawer-active' : 'drawer-closed'} view-mode-${viewMode}`}>
       {/* Persistent Left Collection Shelf */}
       <div className="collection-main-container">
         <div className="collection-shelf-content">
