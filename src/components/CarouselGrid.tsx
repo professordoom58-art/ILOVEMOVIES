@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { MediaItem } from '../types/movie';
@@ -21,62 +21,13 @@ export const CarouselGrid: React.FC<CarouselGridProps> = ({
 }) => {
   const [emblaRef, emblaApi] = useEmblaCarousel({
     axis: 'x',
-    dragFree: true,
     loop: true,
     align: 'center',
+    skipSnaps: true,
   });
 
   const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
-
-  // Mobile Horizontal Centering Snap Handler
-  useEffect(() => {
-    if (!emblaApi) return;
-
-    let isSnapping = false;
-
-    const snapToClosestCard = () => {
-      if (isSnapping) return;
-      const rootNode = emblaApi.rootNode();
-      const containerNode = emblaApi.containerNode();
-      if (!rootNode || !containerNode) return;
-
-      const viewportRect = rootNode.getBoundingClientRect();
-      const viewportCenter = viewportRect.left + viewportRect.width / 2;
-
-      const slideElements = Array.from(containerNode.children) as HTMLElement[];
-      if (slideElements.length === 0) return;
-
-      let closestIndex = 0;
-      let minDistance = Infinity;
-
-      slideElements.forEach((slide, index) => {
-        const card = slide.querySelector('.cc') || slide;
-        const rect = card.getBoundingClientRect();
-        const cardCenter = rect.left + rect.width / 2;
-        const distance = Math.abs(cardCenter - viewportCenter);
-
-        if (distance < minDistance) {
-          minDistance = distance;
-          closestIndex = index;
-        }
-      });
-
-      isSnapping = true;
-      emblaApi.scrollTo(closestIndex);
-      setTimeout(() => {
-        isSnapping = false;
-      }, 300);
-    };
-
-    emblaApi.on('pointerUp', snapToClosestCard);
-    emblaApi.on('settle', snapToClosestCard);
-
-    return () => {
-      emblaApi.off('pointerUp', snapToClosestCard);
-      emblaApi.off('settle', snapToClosestCard);
-    };
-  }, [emblaApi]);
 
 
 
