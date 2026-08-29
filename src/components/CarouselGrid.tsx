@@ -22,7 +22,7 @@ export const CarouselGrid: React.FC<CarouselGridProps> = ({
   const [emblaRef, emblaApi] = useEmblaCarousel({
     axis: 'x',
     loop: true,
-    align: 'start',
+    align: 'center',
     skipSnaps: true,
     startIndex: 0,
   });
