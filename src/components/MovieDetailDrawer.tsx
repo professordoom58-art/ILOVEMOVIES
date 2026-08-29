@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { MediaItem, Movie } from '../types/movie';
 import { Scoreboard } from './Scoreboard';
 import { CastLineup } from './CastLineup';
@@ -26,6 +27,17 @@ export const MovieDetailDrawer: React.FC<MovieDetailDrawerProps> = ({
     setActiveMovieInCollection(null);
     setHasPosterError(false);
   }, [item]);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -56,13 +68,19 @@ export const MovieDetailDrawer: React.FC<MovieDetailDrawerProps> = ({
   const posterToRender = currentMedia.largePoster || currentMedia.poster;
   const showPoster = Boolean(posterToRender) && !hasPosterError;
 
-  return (
-    <div
-      className={`detail-drawer-container ${isOpen ? 'is-open' : ''}`}
-      role="dialog"
-      aria-modal="false"
-      aria-label={`${currentMedia.title} Details`}
-    >
+  const modalContent = (
+    <>
+      <div
+        className={`mobile-modal-backdrop ${isOpen ? 'is-open' : ''}`}
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      <div
+        className={`detail-drawer-container ${isOpen ? 'is-open' : ''}`}
+        role="dialog"
+        aria-modal={isOpen}
+        aria-label={`${currentMedia.title} Details`}
+      >
       <div className="drawer-header-bar">
         {isViewingMovieInCollection ? (
           <button
@@ -358,5 +376,8 @@ export const MovieDetailDrawer: React.FC<MovieDetailDrawerProps> = ({
         )}
       </div>
     </div>
+  </>
   );
+
+  return createPortal(modalContent, document.body);
 };

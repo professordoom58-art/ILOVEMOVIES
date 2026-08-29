@@ -1603,18 +1603,51 @@ body {
     text-align: center;
   }
 
-  /* Full-Screen Mobile Modal Overlay for Details */
+  /* Dimmed Blur Backdrop for Mobile App Modal */
+  .mobile-modal-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background-color: rgba(8, 11, 18, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 9998;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.28s ease;
+  }
+
+  .mobile-modal-backdrop.is-open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Full-Screen Mobile App Modal Overlay for Details */
   .detail-drawer-container {
-    width: 100vw;
-    height: 100vh;
-    height: 100dvh;
+    position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    background-color: var(--bg-drawer);
     border-left: none;
     box-shadow: none;
-    z-index: 1000;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.94) translateY(24px);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+  }
+
+  .detail-drawer-container.is-open {
+    opacity: 1;
+    pointer-events: auto;
+    transform: scale(1) translateY(0);
   }
 
   .drawer-header-bar {
