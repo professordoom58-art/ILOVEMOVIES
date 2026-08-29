@@ -1477,8 +1477,13 @@ body {
     padding: 1rem 1.25rem 0.5rem 1.25rem;
     background-color: var(--bg-collection);
     z-index: 400;
-    box-shadow: none;
-    filter: none;
+    box-shadow: none !important;
+    filter: none !important;
+    border-bottom: none !important;
+  }
+
+  .header-top-row {
+    border-bottom: none !important;
   }
 
   .drawer-active .site-header {
