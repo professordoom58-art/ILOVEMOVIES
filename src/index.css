@@ -1455,23 +1455,33 @@ body {
     width: 100%;
     overflow: hidden;
     padding: 0.5rem 0 1.5rem 0;
+    touch-action: pan-x;
   }
 
   .embla__container {
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
-    padding-left: 0;
-    padding-right: 0;
+    padding: 0;
     margin: 0;
-    gap: 12px;
+    gap: 0;
   }
 
   .embla__slide {
-    flex: 0 0 calc((100% - 12px) / 2);
+    flex: 0 0 100%;
     min-width: 0;
-    max-width: none;
-    padding-right: 0;
+    max-width: 100%;
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+  }
+
+  .embla__slide .cc {
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto;
   }
 
   .carousel-bottom-controls {
