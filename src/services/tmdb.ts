@@ -13,7 +13,7 @@ import { MIHIR_RATINGS_BY_TMDB_ID, MIHIR_RATINGS_BY_COLLECTION_ID } from '../dat
 
 const TMDB_API_BASES = ['/api/tmdb', 'https://api.tmdb.org/3', 'https://api.themoviedb.org/3'];
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p';
-const CACHE_PREFIX = 'mfm_media_cache_v18_';
+const CACHE_PREFIX = 'mfm_media_cache_v19_';
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 Hours
 
 const ACCESS_TOKEN = import.meta.env.VITE_TMDB_ACCESS_TOKEN || import.meta.env.TMDB_ACCESS_TOKEN || '';
@@ -204,10 +204,10 @@ function extractYouCast(
     order: 0
   };
 
-  // 2. Elizabeth Lail — Guinevere Beck (Beck)
+  // 2. Elizabeth Lail — Guinevere Beck (TMDB ID: 1368507)
   const elizabethPath = findPath(elizabethFromApi, 'elizabeth lail');
   const elizabethMember: CastMember = {
-    id: 1450259,
+    id: 1368507,
     name: 'Elizabeth Lail',
     character: 'Guinevere Beck',
     profilePath: elizabethPath,
@@ -458,7 +458,7 @@ export async function getTVSeries(tmdbId: number, personalNotes?: string): Promi
     try {
       const [victoriaData, elizabethData, shayData, jamesSearchRes] = await Promise.all([
         fetchFromTmdbApi(`/person/2117434`).catch(() => null),
-        fetchFromTmdbApi(`/person/1450259`).catch(() => null),
+        fetchFromTmdbApi(`/person/1368507`).catch(() => null),
         fetchFromTmdbApi(`/person/222088`).catch(() => null),
         fetchFromTmdbApi(`/search/person?query=James%20Scully`).catch(() => null)
       ]);
@@ -468,6 +468,17 @@ export async function getTVSeries(tmdbId: number, personalNotes?: string): Promi
         jamesData = jamesSearchRes.results.find((p: any) =>
           p.name?.toLowerCase().includes('james scully')
         ) || jamesSearchRes.results[0];
+
+        if (jamesData && !jamesData.profile_path && jamesData.id) {
+          try {
+            const jamesDirect = await fetchFromTmdbApi(`/person/${jamesData.id}`);
+            if (jamesDirect && jamesDirect.profile_path) {
+              jamesData = jamesDirect;
+            }
+          } catch (e) {
+            console.warn('James Scully direct fetch error:', e);
+          }
+        }
       }
 
       rawData = {
@@ -480,7 +491,7 @@ export async function getTVSeries(tmdbId: number, personalNotes?: string): Promi
           profilePath: victoriaData.profile_path || null
         } : undefined,
         elizabethLail: elizabethData ? {
-          id: 1450259,
+          id: 1368507,
           name: 'Elizabeth Lail',
           character: 'Guinevere Beck',
           profile_path: elizabethData.profile_path || null,

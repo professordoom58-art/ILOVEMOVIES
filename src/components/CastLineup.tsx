@@ -34,8 +34,6 @@ export const CastLineup: React.FC<CastLineupProps> = ({ cast }) => {
                     alt={member.name}
                     className="cast-photo-img"
                     loading="lazy"
-                    crossOrigin="anonymous"
-                    referrerPolicy="no-referrer"
                     onError={() => handleImageError(member.id, member.name, member.photoUrl)}
                   />
                 ) : (
