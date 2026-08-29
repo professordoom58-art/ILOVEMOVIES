@@ -160,9 +160,11 @@ export function App() {
             )}
           </main>
 
-          <footer className="site-footer">
-            <p className="footer-subtitle">A personal collection of films worth remembering.</p>
-          </footer>
+          {viewMode === 'grid' && (
+            <footer className="site-footer">
+              <p className="footer-subtitle">A personal collection of films worth remembering.</p>
+            </footer>
+          )}
         </div>
       </div>
 
