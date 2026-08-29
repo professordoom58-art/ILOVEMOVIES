@@ -86,17 +86,18 @@ export const MovieCard: React.FC<MovieCardProps> = ({ item, isSelected, onSelect
             <span>{badgeLabel}</span>
           </div>
         )}
-
-        {scoreDisplay && (
-          <div className="cc__score" aria-label={`Mihir's score: ${scoreDisplay}`}>
-            <span className="cc__score-num">{scoreDisplay}</span>
-          </div>
-        )}
       </div>
 
       <div className="movie-meta-info">
         <h3 className="movie-card-title">{item.title}</h3>
-        <span className="movie-card-year">{subtitle}</span>
+        <div className="movie-card-subrow">
+          <span className="movie-card-year">{subtitle}</span>
+          {scoreDisplay && (
+            <span className="score-badge" aria-label={`Score: ${scoreDisplay}`}>
+              {scoreDisplay}
+            </span>
+          )}
+        </div>
       </div>
     </button>
   );

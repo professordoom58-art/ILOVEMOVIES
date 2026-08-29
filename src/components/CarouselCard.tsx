@@ -96,7 +96,7 @@ export const CarouselCard: React.FC<CarouselCardProps> = ({
         <div className="cc__info-row">
           {yearLine && <span className="cc__year">{yearLine}</span>}
           {scoreDisplay && (
-            <span className="cc__score-val" aria-label={`Score: ${scoreDisplay}`}>
+            <span className="score-badge" aria-label={`Score: ${scoreDisplay}`}>
               {scoreDisplay}
             </span>
           )}

@@ -392,6 +392,14 @@ body {
   color: var(--text-muted);
 }
 
+.movie-card-subrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+  width: 100%;
+}
+
 /* ==========================================================================
    Right-Side Movie Detail Drawer
    ========================================================================== */
@@ -1384,24 +1392,26 @@ body {
   text-overflow: ellipsis;
 }
 
-.cc__mihir-score {
+/* Circular Score Badge (Carousel & Grid) */
+.score-badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
-  font-family: var(--font-sans);
-  font-size: 0.76rem;
-  font-weight: 700;
-}
-
-.cc__score-label {
-  font-size: 0.65rem;
-  letter-spacing: 0.05em;
-  color: var(--text-muted);
-}
-
-.cc__score-val {
+  justify-content: center;
+  min-width: 25px;
+  height: 25px;
+  padding: 0 5px;
+  border-radius: 9999px;
+  border: 1px solid rgba(174, 184, 197, 0.22);
+  background-color: rgba(17, 26, 41, 0.65);
   color: var(--mihir-score-color);
-  font-size: 0.88rem;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  text-align: center;
+  flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 /* ── Bottom Centered Arrow controls ─── */
