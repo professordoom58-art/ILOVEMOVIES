@@ -13,7 +13,7 @@ import { MIHIR_RATINGS_BY_TMDB_ID, MIHIR_RATINGS_BY_COLLECTION_ID } from '../dat
 
 const TMDB_API_BASES = ['/api/tmdb', 'https://api.tmdb.org/3', 'https://api.themoviedb.org/3'];
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p';
-const CACHE_PREFIX = 'mfm_media_cache_v17_';
+const CACHE_PREFIX = 'mfm_media_cache_v18_';
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 Hours
 
 const ACCESS_TOKEN = import.meta.env.VITE_TMDB_ACCESS_TOKEN || import.meta.env.TMDB_ACCESS_TOKEN || '';
@@ -180,8 +180,8 @@ function extractYouCast(
   credits: any,
   victoriaFromApi?: any,
   elizabethFromApi?: any,
-  jamesFromApi?: any,
-  shayFromApi?: any
+  shayFromApi?: any,
+  jamesFromApi?: any
 ): CastMember[] {
   const castList = credits?.cast || [];
 
@@ -193,7 +193,7 @@ function extractYouCast(
     return found?.profile_path || null;
   };
 
-  // Victoria Pedretti — Love Quinn
+  // 1. Victoria Pedretti — Love Quinn
   const victoriaPath = findPath(victoriaFromApi, 'victoria pedretti');
   const victoriaMember: CastMember = {
     id: 2117434,
@@ -204,7 +204,7 @@ function extractYouCast(
     order: 0
   };
 
-  // Elizabeth Lail — Guinevere Beck (Beck)
+  // 2. Elizabeth Lail — Guinevere Beck (Beck)
   const elizabethPath = findPath(elizabethFromApi, 'elizabeth lail');
   const elizabethMember: CastMember = {
     id: 1450259,
@@ -215,25 +215,25 @@ function extractYouCast(
     order: 1
   };
 
-  // James Scully — Forty Quinn
-  const jamesPath = findPath(jamesFromApi, 'james scully');
-  const jamesMember: CastMember = {
-    id: 1803738,
-    name: 'James Scully',
-    character: 'Forty Quinn',
-    profilePath: jamesPath,
-    photoUrl: jamesPath ? (buildTmdbImageUrl(jamesPath, 'w342') || undefined) : undefined,
-    order: 2
-  };
-
-  // Shay Mitchell — Peach Salinger
+  // 3. Shay Mitchell — Peach Salinger (TMDB Person ID: 222088)
   const shayPath = findPath(shayFromApi, 'shay mitchell');
   const shayMember: CastMember = {
-    id: 588960,
+    id: shayFromApi?.id || 222088,
     name: 'Shay Mitchell',
     character: 'Peach Salinger',
     profilePath: shayPath,
     photoUrl: shayPath ? (buildTmdbImageUrl(shayPath, 'w342') || undefined) : undefined,
+    order: 2
+  };
+
+  // 4. James Scully — Forty Quinn (Resolved via TMDB people API)
+  const jamesPath = findPath(jamesFromApi, 'james scully');
+  const jamesMember: CastMember = {
+    id: jamesFromApi?.id || 1803738,
+    name: 'James Scully',
+    character: 'Forty Quinn',
+    profilePath: jamesPath,
+    photoUrl: jamesPath ? (buildTmdbImageUrl(jamesPath, 'w342') || undefined) : undefined,
     order: 3
   };
 
@@ -241,14 +241,14 @@ function extractYouCast(
   const excludedNames = [
     'victoria pedretti',
     'elizabeth lail',
-    'james scully',
     'shay mitchell',
+    'james scully',
     'griffin matthews',
     'anna camp',
     'madeline brewer'
   ];
 
-  // Remaining cast members (e.g. Penn Badgley - Joe Goldberg)
+  // Remaining cast members (e.g. Penn Badgley - Joe Goldberg, etc.)
   const remaining = castList
     .filter((c: any) => {
       const name = c.name?.toLowerCase() || '';
@@ -264,7 +264,7 @@ function extractYouCast(
       order: idx + 4
     }));
 
-  return [victoriaMember, elizabethMember, jamesMember, shayMember, ...remaining];
+  return [victoriaMember, elizabethMember, shayMember, jamesMember, ...remaining];
 }
 
 /**
@@ -330,7 +330,7 @@ function normalizeTMDBTV(raw: any, personalNotes?: string): TVSeries {
     largePoster: posterW780 || posterW500,
     backdrop: backdropW1280,
     status: raw.status,
-    cast: raw.id === 78191 ? extractYouCast(raw.credits, raw.victoriaPedretti, raw.elizabethLail, raw.jamesScully, raw.shayMitchell) : extractCast(raw.credits, 6),
+    cast: raw.id === 78191 ? extractYouCast(raw.credits, raw.victoriaPedretti, raw.elizabethLail, raw.shayMitchell, raw.jamesScully) : extractCast(raw.credits, 6),
     scores: {
       mihirScore: savedReview?.mihirScore ?? MIHIR_RATINGS_BY_TMDB_ID[raw.id] ?? null,
       imdbScore: raw.vote_average ? `${Math.round(raw.vote_average * 10) / 10} / 10` : null,
@@ -456,12 +456,19 @@ export async function getTVSeries(tmdbId: number, personalNotes?: string): Promi
     }
   } else if (tmdbId === 78191) {
     try {
-      const [victoriaData, elizabethData, jamesData, shayData] = await Promise.all([
+      const [victoriaData, elizabethData, shayData, jamesSearchRes] = await Promise.all([
         fetchFromTmdbApi(`/person/2117434`).catch(() => null),
         fetchFromTmdbApi(`/person/1450259`).catch(() => null),
-        fetchFromTmdbApi(`/person/1803738`).catch(() => null),
-        fetchFromTmdbApi(`/person/588960`).catch(() => null)
+        fetchFromTmdbApi(`/person/222088`).catch(() => null),
+        fetchFromTmdbApi(`/search/person?query=James%20Scully`).catch(() => null)
       ]);
+
+      let jamesData: any = null;
+      if (jamesSearchRes && jamesSearchRes.results && jamesSearchRes.results.length > 0) {
+        jamesData = jamesSearchRes.results.find((p: any) =>
+          p.name?.toLowerCase().includes('james scully')
+        ) || jamesSearchRes.results[0];
+      }
 
       rawData = {
         ...rawData,
@@ -479,19 +486,19 @@ export async function getTVSeries(tmdbId: number, personalNotes?: string): Promi
           profile_path: elizabethData.profile_path || null,
           profilePath: elizabethData.profile_path || null
         } : undefined,
-        jamesScully: jamesData ? {
-          id: 1803738,
-          name: 'James Scully',
-          character: 'Forty Quinn',
-          profile_path: jamesData.profile_path || null,
-          profilePath: jamesData.profile_path || null
-        } : undefined,
         shayMitchell: shayData ? {
-          id: 588960,
+          id: 222088,
           name: 'Shay Mitchell',
           character: 'Peach Salinger',
           profile_path: shayData.profile_path || null,
           profilePath: shayData.profile_path || null
+        } : undefined,
+        jamesScully: jamesData ? {
+          id: jamesData.id,
+          name: 'James Scully',
+          character: 'Forty Quinn',
+          profile_path: jamesData.profile_path || null,
+          profilePath: jamesData.profile_path || null
         } : undefined
       };
     } catch (err) {
