@@ -1631,18 +1631,28 @@ body {
     margin: 0 auto;
   }
 
-  /* 3. CAST — Horizontal Swipe Scroll Carousel */
+  /* 3. CAST — Side-Scrolling Horizontal Container (Mobile Only) */
+  .cast-section {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+  }
+
   .cast-grid {
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
+    width: 100%;
+    max-width: 100%;
     overflow-x: auto;
+    overflow-y: hidden;
     scroll-snap-type: x mandatory;
     gap: 0.75rem;
     padding-bottom: 0.5rem;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     -ms-overflow-style: none;
+    box-sizing: border-box;
   }
 
   .cast-grid::-webkit-scrollbar {
@@ -1652,7 +1662,8 @@ body {
   }
 
   .cast-card {
-    flex: 0 0 calc(50% - 0.4rem);
+    flex: 0 0 calc((100% - 0.75rem) / 2);
+    width: calc((100% - 0.75rem) / 2);
     min-width: 0;
     scroll-snap-align: start;
   }
