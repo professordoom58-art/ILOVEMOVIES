@@ -1170,24 +1170,7 @@ body {
   }
 }
 
-@media (max-width: 540px) {
-  .scoreboard-container {
-    grid-template-columns: 1fr;
-  }
 
-  .score-col {
-    border-right: none;
-    border-bottom: 1px solid var(--border-color);
-  }
-
-  .score-col:last-child {
-    border-bottom: none;
-  }
-
-  .cast-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
 
 /* ==========================================================================
    Cinematic Carousel — Embla-based
@@ -1531,6 +1514,69 @@ body {
 
   .drawer-kind-pill {
     align-self: center;
+  }
+
+  /* 1. SCORES — 3-Column Side-by-Side Horizontal Layout */
+  .scoreboard-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.25rem;
+    padding: 0.75rem 0.35rem;
+  }
+
+  .score-col {
+    padding: 0.4rem 0.2rem;
+    border-right: 1px solid var(--border-color);
+    border-bottom: none;
+    text-align: center;
+  }
+
+  .score-col:last-child {
+    border-right: none;
+    border-bottom: none;
+  }
+
+  .score-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.01em;
+    margin-bottom: 0.2rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .score-value {
+    font-size: 1.15rem;
+  }
+
+  .score-subtext {
+    font-size: 0.65rem;
+  }
+
+  /* 2. CAST — Horizontal Swipe Scroll Carousel */
+  .cast-grid {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: 0.75rem;
+    padding-bottom: 0.5rem;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .cast-grid::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
+  .cast-card {
+    flex: 0 0 calc(50% - 0.4rem);
+    min-width: 0;
+    scroll-snap-align: start;
   }
 }
 
