@@ -13,7 +13,7 @@ import { MIHIR_RATINGS_BY_TMDB_ID, MIHIR_RATINGS_BY_COLLECTION_ID } from '../dat
 
 const TMDB_API_BASES = ['/api/tmdb', 'https://api.tmdb.org/3', 'https://api.themoviedb.org/3'];
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p';
-const CACHE_PREFIX = 'mfm_media_cache_v16_';
+const CACHE_PREFIX = 'mfm_media_cache_v17_';
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 Hours
 
 const ACCESS_TOKEN = import.meta.env.VITE_TMDB_ACCESS_TOKEN || import.meta.env.TMDB_ACCESS_TOKEN || '';
@@ -176,20 +176,25 @@ function extractTrueDetectiveS1Cast(credits: any): CastMember[] {
   });
 }
 
-function extractYouCast(credits: any, victoriaFromApi?: any, elizabethFromApi?: any): CastMember[] {
+function extractYouCast(
+  credits: any,
+  victoriaFromApi?: any,
+  elizabethFromApi?: any,
+  jamesFromApi?: any,
+  shayFromApi?: any
+): CastMember[] {
   const castList = credits?.cast || [];
 
-  // Victoria Pedretti — Love Quinn
-  let victoriaPath: string | null = victoriaFromApi?.profile_path || null;
-  if (!victoriaPath) {
-    const found = castList.find((c: any) =>
-      c.name?.toLowerCase().includes('victoria pedretti')
-    );
-    if (found) {
-      victoriaPath = found.profile_path || null;
+  const findPath = (apiData: any, nameSubstring: string): string | null => {
+    if (apiData?.profile_path || apiData?.profilePath) {
+      return apiData.profile_path || apiData.profilePath;
     }
-  }
+    const found = castList.find((c: any) => c.name?.toLowerCase().includes(nameSubstring));
+    return found?.profile_path || null;
+  };
 
+  // Victoria Pedretti — Love Quinn
+  const victoriaPath = findPath(victoriaFromApi, 'victoria pedretti');
   const victoriaMember: CastMember = {
     id: 2117434,
     name: 'Victoria Pedretti',
@@ -200,16 +205,7 @@ function extractYouCast(credits: any, victoriaFromApi?: any, elizabethFromApi?: 
   };
 
   // Elizabeth Lail — Guinevere Beck (Beck)
-  let elizabethPath: string | null = elizabethFromApi?.profile_path || null;
-  if (!elizabethPath) {
-    const found = castList.find((c: any) =>
-      c.name?.toLowerCase().includes('elizabeth lail')
-    );
-    if (found) {
-      elizabethPath = found.profile_path || null;
-    }
-  }
-
+  const elizabethPath = findPath(elizabethFromApi, 'elizabeth lail');
   const elizabethMember: CastMember = {
     id: 1450259,
     name: 'Elizabeth Lail',
@@ -219,25 +215,56 @@ function extractYouCast(credits: any, victoriaFromApi?: any, elizabethFromApi?: 
     order: 1
   };
 
-  // Remaining cast members (excluding Victoria Pedretti, Elizabeth Lail, and Madeline Brewer)
+  // James Scully — Forty Quinn
+  const jamesPath = findPath(jamesFromApi, 'james scully');
+  const jamesMember: CastMember = {
+    id: 1803738,
+    name: 'James Scully',
+    character: 'Forty Quinn',
+    profilePath: jamesPath,
+    photoUrl: jamesPath ? (buildTmdbImageUrl(jamesPath, 'w342') || undefined) : undefined,
+    order: 2
+  };
+
+  // Shay Mitchell — Peach Salinger
+  const shayPath = findPath(shayFromApi, 'shay mitchell');
+  const shayMember: CastMember = {
+    id: 588960,
+    name: 'Shay Mitchell',
+    character: 'Peach Salinger',
+    profilePath: shayPath,
+    photoUrl: shayPath ? (buildTmdbImageUrl(shayPath, 'w342') || undefined) : undefined,
+    order: 3
+  };
+
+  // Excluded actors list per user directive
+  const excludedNames = [
+    'victoria pedretti',
+    'elizabeth lail',
+    'james scully',
+    'shay mitchell',
+    'griffin matthews',
+    'anna camp',
+    'madeline brewer'
+  ];
+
+  // Remaining cast members (e.g. Penn Badgley - Joe Goldberg)
   const remaining = castList
     .filter((c: any) => {
       const name = c.name?.toLowerCase() || '';
-      return !name.includes('victoria pedretti') &&
-             !name.includes('elizabeth lail') &&
-             !name.includes('madeline brewer');
+      return !excludedNames.some((ex) => name.includes(ex));
     })
-    .slice(0, 4)
+    .slice(0, 3)
     .map((c: any, idx: number) => ({
       id: c.id,
       name: c.name,
       character: c.character || 'Self',
       profilePath: c.profile_path || null,
       photoUrl: buildTmdbImageUrl(c.profile_path, 'w342') || undefined,
-      order: idx + 2
+      order: idx + 4
     }));
 
-  return [victoriaMember, elizabethMember, ...remaining];
+  return [victoriaMember, elizabethMember, jamesMember, shayMember, ...remaining];
 }
 
 /**
@@ -303,7 +330,7 @@ function normalizeTMDBTV(raw: any, personalNotes?: string): TVSeries {
     largePoster: posterW780 || posterW500,
     backdrop: backdropW1280,
     status: raw.status,
-    cast: raw.id === 78191 ? extractYouCast(raw.credits, raw.victoriaPedretti, raw.elizabethLail) : extractCast(raw.credits, 6),
+    cast: raw.id === 78191 ? extractYouCast(raw.credits, raw.victoriaPedretti, raw.elizabethLail, raw.jamesScully, raw.shayMitchell) : extractCast(raw.credits, 6),
     scores: {
       mihirScore: savedReview?.mihirScore ?? MIHIR_RATINGS_BY_TMDB_ID[raw.id] ?? null,
       imdbScore: raw.vote_average ? `${Math.round(raw.vote_average * 10) / 10} / 10` : null,
@@ -429,9 +456,11 @@ export async function getTVSeries(tmdbId: number, personalNotes?: string): Promi
     }
   } else if (tmdbId === 78191) {
     try {
-      const [victoriaData, elizabethData] = await Promise.all([
+      const [victoriaData, elizabethData, jamesData, shayData] = await Promise.all([
         fetchFromTmdbApi(`/person/2117434`).catch(() => null),
-        fetchFromTmdbApi(`/person/1450259`).catch(() => null)
+        fetchFromTmdbApi(`/person/1450259`).catch(() => null),
+        fetchFromTmdbApi(`/person/1803738`).catch(() => null),
+        fetchFromTmdbApi(`/person/588960`).catch(() => null)
       ]);
 
       rawData = {
@@ -449,10 +478,24 @@ export async function getTVSeries(tmdbId: number, personalNotes?: string): Promi
           character: 'Guinevere Beck',
           profile_path: elizabethData.profile_path || null,
           profilePath: elizabethData.profile_path || null
+        } : undefined,
+        jamesScully: jamesData ? {
+          id: 1803738,
+          name: 'James Scully',
+          character: 'Forty Quinn',
+          profile_path: jamesData.profile_path || null,
+          profilePath: jamesData.profile_path || null
+        } : undefined,
+        shayMitchell: shayData ? {
+          id: 588960,
+          name: 'Shay Mitchell',
+          character: 'Peach Salinger',
+          profile_path: shayData.profile_path || null,
+          profilePath: shayData.profile_path || null
         } : undefined
       };
     } catch (err) {
-      console.warn('Could not fetch Victoria Pedretti or Elizabeth Lail person data:', err);
+      console.warn('Could not fetch You series cast person data:', err);
     }
   }
 
