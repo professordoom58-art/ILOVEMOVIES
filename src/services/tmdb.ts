@@ -13,7 +13,7 @@ import { MIHIR_RATINGS_BY_TMDB_ID, MIHIR_RATINGS_BY_COLLECTION_ID } from '../dat
 
 const TMDB_API_BASES = ['/api/tmdb', 'https://api.tmdb.org/3', 'https://api.themoviedb.org/3'];
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p';
-const CACHE_PREFIX = 'mfm_media_cache_v15_';
+const CACHE_PREFIX = 'mfm_media_cache_v16_';
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 Hours
 
 const ACCESS_TOKEN = import.meta.env.VITE_TMDB_ACCESS_TOKEN || import.meta.env.TMDB_ACCESS_TOKEN || '';
@@ -176,9 +176,10 @@ function extractTrueDetectiveS1Cast(credits: any): CastMember[] {
   });
 }
 
-function extractYouCast(credits: any, victoriaFromApi?: any): CastMember[] {
+function extractYouCast(credits: any, victoriaFromApi?: any, elizabethFromApi?: any): CastMember[] {
   const castList = credits?.cast || [];
 
+  // Victoria Pedretti — Love Quinn
   let victoriaPath: string | null = victoriaFromApi?.profile_path || null;
   if (!victoriaPath) {
     const found = castList.find((c: any) =>
@@ -189,30 +190,54 @@ function extractYouCast(credits: any, victoriaFromApi?: any): CastMember[] {
     }
   }
 
-  const photoUrl = victoriaPath ? (buildTmdbImageUrl(victoriaPath, 'w342') || undefined) : undefined;
-
   const victoriaMember: CastMember = {
     id: 2117434,
     name: 'Victoria Pedretti',
     character: 'Love Quinn',
     profilePath: victoriaPath,
-    photoUrl,
+    photoUrl: victoriaPath ? (buildTmdbImageUrl(victoriaPath, 'w342') || undefined) : undefined,
     order: 0
   };
 
+  // Elizabeth Lail — Guinevere Beck (Beck)
+  let elizabethPath: string | null = elizabethFromApi?.profile_path || null;
+  if (!elizabethPath) {
+    const found = castList.find((c: any) =>
+      c.name?.toLowerCase().includes('elizabeth lail')
+    );
+    if (found) {
+      elizabethPath = found.profile_path || null;
+    }
+  }
+
+  const elizabethMember: CastMember = {
+    id: 1450259,
+    name: 'Elizabeth Lail',
+    character: 'Guinevere Beck',
+    profilePath: elizabethPath,
+    photoUrl: elizabethPath ? (buildTmdbImageUrl(elizabethPath, 'w342') || undefined) : undefined,
+    order: 1
+  };
+
+  // Remaining cast members (excluding Victoria Pedretti, Elizabeth Lail, and Madeline Brewer)
   const remaining = castList
-    .filter((c: any) => !c.name?.toLowerCase().includes('victoria pedretti'))
-    .slice(0, 5)
+    .filter((c: any) => {
+      const name = c.name?.toLowerCase() || '';
+      return !name.includes('victoria pedretti') &&
+             !name.includes('elizabeth lail') &&
+             !name.includes('madeline brewer');
+    })
+    .slice(0, 4)
     .map((c: any, idx: number) => ({
       id: c.id,
       name: c.name,
       character: c.character || 'Self',
       profilePath: c.profile_path || null,
       photoUrl: buildTmdbImageUrl(c.profile_path, 'w342') || undefined,
-      order: idx + 1
+      order: idx + 2
     }));
 
-  return [victoriaMember, ...remaining];
+  return [victoriaMember, elizabethMember, ...remaining];
 }
 
 /**
@@ -278,7 +303,7 @@ function normalizeTMDBTV(raw: any, personalNotes?: string): TVSeries {
     largePoster: posterW780 || posterW500,
     backdrop: backdropW1280,
     status: raw.status,
-    cast: raw.id === 78191 ? extractYouCast(raw.credits, raw.victoriaPedretti) : extractCast(raw.credits, 6),
+    cast: raw.id === 78191 ? extractYouCast(raw.credits, raw.victoriaPedretti, raw.elizabethLail) : extractCast(raw.credits, 6),
     scores: {
       mihirScore: savedReview?.mihirScore ?? MIHIR_RATINGS_BY_TMDB_ID[raw.id] ?? null,
       imdbScore: raw.vote_average ? `${Math.round(raw.vote_average * 10) / 10} / 10` : null,
@@ -404,21 +429,30 @@ export async function getTVSeries(tmdbId: number, personalNotes?: string): Promi
     }
   } else if (tmdbId === 78191) {
     try {
-      const victoriaData = await fetchFromTmdbApi(`/person/2117434`);
-      if (victoriaData) {
-        rawData = {
-          ...rawData,
-          victoriaPedretti: {
-            id: 2117434,
-            name: 'Victoria Pedretti',
-            character: 'Love Quinn',
-            profile_path: victoriaData.profile_path || null,
-            profilePath: victoriaData.profile_path || null
-          }
-        };
-      }
+      const [victoriaData, elizabethData] = await Promise.all([
+        fetchFromTmdbApi(`/person/2117434`).catch(() => null),
+        fetchFromTmdbApi(`/person/1450259`).catch(() => null)
+      ]);
+
+      rawData = {
+        ...rawData,
+        victoriaPedretti: victoriaData ? {
+          id: 2117434,
+          name: 'Victoria Pedretti',
+          character: 'Love Quinn',
+          profile_path: victoriaData.profile_path || null,
+          profilePath: victoriaData.profile_path || null
+        } : undefined,
+        elizabethLail: elizabethData ? {
+          id: 1450259,
+          name: 'Elizabeth Lail',
+          character: 'Guinevere Beck',
+          profile_path: elizabethData.profile_path || null,
+          profilePath: elizabethData.profile_path || null
+        } : undefined
+      };
     } catch (err) {
-      console.warn('Could not fetch Victoria Pedretti person 2117434 data:', err);
+      console.warn('Could not fetch Victoria Pedretti or Elizabeth Lail person data:', err);
     }
   }
 
