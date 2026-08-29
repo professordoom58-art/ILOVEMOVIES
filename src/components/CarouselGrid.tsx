@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { MediaItem } from '../types/movie';
@@ -22,12 +22,37 @@ export const CarouselGrid: React.FC<CarouselGridProps> = ({
   const [emblaRef, emblaApi] = useEmblaCarousel({
     axis: 'x',
     loop: true,
-    align: 'center',
+    align: 'start',
     skipSnaps: true,
+    startIndex: 0,
   });
 
   const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
+
+  const hasInitializedRef = useRef(false);
+
+  // Force reset Embla to slide #0 (#1 Avengers: Infinity War) on fresh page load/reload
+  useEffect(() => {
+    if (!emblaApi) return;
+
+    if (!hasInitializedRef.current) {
+      hasInitializedRef.current = true;
+      emblaApi.scrollTo(0, true);
+    }
+  }, [emblaApi, items]);
+
+  // Clean up any stale persisted carousel keys
+  useEffect(() => {
+    try {
+      localStorage.removeItem('mfm_carousel_index');
+      sessionStorage.removeItem('mfm_carousel_index');
+      localStorage.removeItem('embla_carousel_index');
+      sessionStorage.removeItem('embla_carousel_index');
+    } catch (e) {
+      // Ignore storage errors
+    }
+  }, []);
 
 
 
