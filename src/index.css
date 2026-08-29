@@ -1657,6 +1657,17 @@ body {
     margin: 0 auto;
   }
 
+  .embla__slide .cc__title {
+    font-size: 1.15rem;
+    font-weight: 600;
+    line-height: 1.25;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
   .carousel-bottom-controls {
     display: none;                 /* Hide navigation arrow buttons on mobile */
   }
