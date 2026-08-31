@@ -72,45 +72,6 @@ export const Header: React.FC<HeaderProps> = ({
                 <Search size={15} strokeWidth={2} />
               </button>
             </div>
-
-            {/* Compact Search Popover Overlay */}
-            {isSearchOpen && (
-              <div className="header-search-popover" role="search">
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  className="header-search-input"
-                  placeholder="Search catalog..."
-                  value={searchQuery}
-                  onChange={(e) => onSearchChange(e.target.value)}
-                  aria-label="Search catalog by title"
-                />
-                {searchQuery ? (
-                  <button
-                    type="button"
-                    className="header-search-clear"
-                    onClick={() => {
-                      onSearchChange('');
-                      searchInputRef.current?.focus();
-                    }}
-                    aria-label="Clear search"
-                    title="Clear search"
-                  >
-                    <X size={14} />
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    className="header-search-clear"
-                    onClick={() => setIsSearchOpen(false)}
-                    aria-label="Close search"
-                    title="Close search"
-                  >
-                    <X size={14} />
-                  </button>
-                )}
-              </div>
-            )}
           </div>
 
           {/* 2. MUSIC TOGGLE */}
@@ -154,6 +115,45 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           </div>
         </nav>
+
+        {/* Responsive Search Popover Overlay anchored to header-top-row */}
+        {isSearchOpen && (
+          <div className="header-search-popover" role="search">
+            <input
+              ref={searchInputRef}
+              type="text"
+              className="header-search-input"
+              placeholder="Search catalog..."
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+              aria-label="Search catalog by title"
+            />
+            {searchQuery ? (
+              <button
+                type="button"
+                className="header-search-clear"
+                onClick={() => {
+                  onSearchChange('');
+                  searchInputRef.current?.focus();
+                }}
+                aria-label="Clear search"
+                title="Clear search"
+              >
+                <X size={14} />
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="header-search-clear"
+                onClick={() => setIsSearchOpen(false)}
+                aria-label="Close search"
+                title="Close search"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </header>
   );

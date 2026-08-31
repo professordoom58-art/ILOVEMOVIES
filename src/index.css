@@ -196,6 +196,14 @@ body {
   color: #080B12;
 }
 
+.header-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  width: 100%;
+}
+
 .header-search-popover {
   position: absolute;
   right: 0;
@@ -208,7 +216,8 @@ body {
   border: 1px solid rgba(212, 167, 44, 0.4);
   border-radius: 8px;
   padding: 4px 8px 4px 12px;
-  width: 260px;
+  width: min(320px, calc(100vw - 2.5rem));
+  max-width: 100%;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
   z-index: 500;
   animation: searchPopIn 0.15s ease-out;
@@ -1703,15 +1712,18 @@ body {
 
   .view-mode-carousel .embla__slide,
   .embla__slide {
-    flex: 0 0 250px !important;
+    flex: 0 0 270px !important;
     min-width: 0 !important;
     padding-left: 10px !important;
     padding-right: 10px !important;
   }
 
   .header-search-popover {
-    right: 0;
-    width: min(280px, calc(100vw - 2rem));
+    right: 1.25rem;
+    left: auto;
+    width: calc(100vw - 2.5rem);
+    max-width: 320px;
+    top: calc(100% + 4px);
   }
 
   .view-mode-carousel .site-footer {
@@ -1736,6 +1748,19 @@ body {
   .header-top-row {
     padding: 0 1.25rem 0.5rem 1.25rem;
     border-bottom: none !important;
+    gap: 0.5rem;
+    position: relative;
+  }
+
+  .header-nav {
+    gap: 0.45rem;
+    flex-shrink: 0;
+  }
+
+  .header-title-group {
+    min-width: 0;
+    flex-shrink: 1;
+    overflow: hidden;
   }
 
   .drawer-active .site-header {
@@ -1792,54 +1817,6 @@ body {
   .cc:hover .cc__title,
   .cc:active .cc__title {
     color: var(--text-primary) !important;
-  }
-
-  .embla {
-    width: 100%;
-    overflow: hidden;
-    padding: 0.5rem 0 1.5rem 0;
-    touch-action: pan-x;
-  }
-
-  .embla__container {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    padding: 0;
-    margin: 0;
-    gap: 0;
-  }
-
-  .embla__slide {
-    flex: 0 0 100%;
-    min-width: 0;
-    max-width: 100%;
-    padding: 0;
-    margin: 0;
-    box-sizing: border-box;
-    display: flex;
-    justify-content: center;
-  }
-
-  .embla__slide .cc {
-    width: 100%;
-    max-width: 320px;
-    margin: 0 auto;
-  }
-
-  .embla__slide .cc__title {
-    font-size: 1.15rem;
-    font-weight: 600;
-    line-height: 1.25;
-    white-space: normal;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  .carousel-bottom-controls {
-    display: none;                 /* Hide navigation arrow buttons on mobile */
   }
 
   /* 1. Header Centering */
