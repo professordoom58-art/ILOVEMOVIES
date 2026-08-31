@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/api/tmdb/(.*)",
+      "destination": "https://api.tmdb.org/3/$1"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
