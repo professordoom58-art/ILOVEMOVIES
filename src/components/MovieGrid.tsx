@@ -40,8 +40,8 @@ export const MovieGrid: React.FC<MovieGridProps> = ({
   if (items.length === 0) {
     return (
       <div className="empty-state">
-        <h3 className="empty-title">No items in collection</h3>
-        <p className="empty-text">Add films and TV series to your personal collection.</p>
+        <h3 className="empty-title">No movies found</h3>
+        <p className="empty-text">Try adjusting your search query.</p>
       </div>
     );
   }

@@ -30,6 +30,12 @@ export function App() {
   const [isLoading, setIsLoading] = useState<boolean>(() => getInitialCatalog().length === 0);
   const [error, setError] = useState<string | null>(null);
   const [selectedItemId, setSelectedItemId] = useState<string | number | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const displayedItems = items.filter((item) => {
+    if (!searchQuery.trim()) return true;
+    return item.title.toLowerCase().includes(searchQuery.toLowerCase().trim());
+  });
 
   // Background audio state (defaults to muted)
   const [isMuted, setIsMuted] = useState(true);
@@ -181,6 +187,8 @@ export function App() {
             onHomeClick={handleCloseDrawer}
             isMuted={isMuted}
             onToggleMute={handleToggleMute}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
           />
 
           {error && (
@@ -192,7 +200,7 @@ export function App() {
           <main className="shelf-grid-wrapper">
             {viewMode === 'carousel' ? (
               <CarouselGrid
-                items={items}
+                items={displayedItems}
                 selectedId={selectedItemId || undefined}
                 onSelectItem={handleSelectItem}
                 isLoading={isLoading}
@@ -200,7 +208,7 @@ export function App() {
               />
             ) : (
               <MovieGrid
-                items={items}
+                items={displayedItems}
                 selectedId={selectedItemId || undefined}
                 onSelectItem={handleSelectItem}
                 isLoading={isLoading}

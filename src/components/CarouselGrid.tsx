@@ -25,7 +25,16 @@ export const CarouselGrid: React.FC<CarouselGridProps> = ({
     align: 'start',
     dragFree: true,
     skipSnaps: true,
+    containScroll: false,
     startIndex: 0,
+    breakpoints: {
+      '(max-width: 768px)': {
+        align: 'center',
+        containScroll: false,
+        dragFree: false,
+        skipSnaps: false,
+      },
+    },
   });
 
   const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
@@ -118,7 +127,16 @@ export const CarouselGrid: React.FC<CarouselGridProps> = ({
     );
   }
 
-  if (hasError || items.length === 0) return null;
+  if (hasError) return null;
+
+  if (items.length === 0) {
+    return (
+      <div className="empty-state">
+        <h3 className="empty-title">No movies found</h3>
+        <p className="empty-text">Try adjusting your search query.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="embla-outer">
