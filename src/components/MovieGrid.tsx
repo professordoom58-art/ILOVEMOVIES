@@ -48,7 +48,7 @@ export const MovieGrid: React.FC<MovieGridProps> = ({
 
   return (
     <div className="movie-grid" aria-label="Personal Media Collection">
-      {items.map((item) => {
+      {items.map((item, idx) => {
         const uniqueKey = item.kind === 'collection' ? item.id : `${item.kind}_${item.tmdbId}`;
         const isSelected = item.kind === 'collection' ? selectedId === item.id : selectedId === item.tmdbId;
 
@@ -56,6 +56,7 @@ export const MovieGrid: React.FC<MovieGridProps> = ({
           <MovieCard
             key={uniqueKey}
             item={item}
+            index={idx}
             isSelected={isSelected}
             onSelect={onSelectItem}
           />

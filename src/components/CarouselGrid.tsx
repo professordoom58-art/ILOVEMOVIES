@@ -22,7 +22,8 @@ export const CarouselGrid: React.FC<CarouselGridProps> = ({
   const [emblaRef, emblaApi] = useEmblaCarousel({
     axis: 'x',
     loop: true,
-    align: 'center',
+    align: 'start',
+    dragFree: true,
     skipSnaps: true,
     startIndex: 0,
   });
@@ -53,6 +54,47 @@ export const CarouselGrid: React.FC<CarouselGridProps> = ({
       // Ignore storage errors
     }
   }, []);
+
+  // Enable mouse wheel / trackpad infinite scrolling for Carousel
+  useEffect(() => {
+    if (!emblaApi) return;
+
+    const rootNode = emblaApi.rootNode();
+    if (!rootNode) return;
+
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    let accumulatedDelta = 0;
+
+    const handleWheel = (e: WheelEvent) => {
+      const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+      if (Math.abs(delta) < 5) return;
+
+      e.preventDefault();
+
+      accumulatedDelta += delta;
+
+      if (timeoutId) clearTimeout(timeoutId);
+
+      if (Math.abs(accumulatedDelta) >= 20) {
+        if (accumulatedDelta > 0) {
+          emblaApi.scrollNext();
+        } else {
+          emblaApi.scrollPrev();
+        }
+        accumulatedDelta = 0;
+      }
+
+      timeoutId = setTimeout(() => {
+        accumulatedDelta = 0;
+      }, 100);
+    };
+
+    rootNode.addEventListener('wheel', handleWheel, { passive: false });
+    return () => {
+      rootNode.removeEventListener('wheel', handleWheel);
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [emblaApi]);
 
 
 

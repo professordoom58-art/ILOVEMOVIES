@@ -1,5 +1,5 @@
 import React from 'react';
-import { StretchHorizontal, Grid2x2 } from 'lucide-react';
+import { StretchHorizontal, Grid2x2, Volume2, VolumeX } from 'lucide-react';
 
 export type ViewMode = 'carousel' | 'grid';
 
@@ -7,11 +7,15 @@ interface HeaderProps {
   viewMode: ViewMode;
   onViewModeChange: (mode: ViewMode) => void;
   onHomeClick?: () => void;
+  isMuted?: boolean;
+  onToggleMute?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   viewMode,
   onViewModeChange,
+  isMuted = true,
+  onToggleMute,
 }) => {
   return (
     <header className="site-header">
@@ -21,6 +25,21 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         <nav className="header-nav">
+          {/* Audio Toggle Button placed before carousel/grid toggle */}
+          {onToggleMute && (
+            <div className="audio-toggle-wrapper">
+              <button
+                type="button"
+                className={`audio-toggle-btn ${!isMuted ? 'active' : ''}`}
+                onClick={onToggleMute}
+                aria-label={isMuted ? 'Unmute background music' : 'Mute background music'}
+                title={isMuted ? 'Unmute background music' : 'Mute background music'}
+              >
+                {isMuted ? <VolumeX size={15} strokeWidth={2} /> : <Volume2 size={15} strokeWidth={2} />}
+              </button>
+            </div>
+          )}
+
           {/* Compact Icon-Only View Mode Toggle */}
           <div className="view-mode-toggle" role="radiogroup" aria-label="View Mode">
             <button

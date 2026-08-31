@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FAVORITE_MEDIA } from './data/favoriteMovies';
 import { fetchCollection } from './services/tmdb';
 import type { MediaItem } from './types/movie';
@@ -14,6 +14,33 @@ export function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedItemId, setSelectedItemId] = useState<string | number | null>(null);
+
+  // Background audio state (defaults to muted)
+  const [isMuted, setIsMuted] = useState(true);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    const audio = new Audio('/jazz.mp3');
+    audio.loop = true;
+    audio.volume = 0.2;
+    audioRef.current = audio;
+
+    return () => {
+      audio.pause();
+      audioRef.current = null;
+    };
+  }, []);
+
+  const handleToggleMute = () => {
+    if (!audioRef.current) return;
+    if (isMuted) {
+      audioRef.current.play().catch((e) => console.warn('Audio playback error:', e));
+      setIsMuted(false);
+    } else {
+      audioRef.current.pause();
+      setIsMuted(true);
+    }
+  };
 
   // View mode state — defaults to 'carousel', persisted in localStorage
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
@@ -132,6 +159,8 @@ export function App() {
             viewMode={viewMode}
             onViewModeChange={handleViewModeChange}
             onHomeClick={handleCloseDrawer}
+            isMuted={isMuted}
+            onToggleMute={handleToggleMute}
           />
 
           {error && (

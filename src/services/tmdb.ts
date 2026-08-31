@@ -371,6 +371,9 @@ async function fetchFromTmdbApi(endpoint: string): Promise<any> {
       }
     } catch (e: any) {
       lastError = e;
+      if (e.message?.startsWith('TMDB HTTP')) {
+        break;
+      }
       console.warn(`TMDB request error on ${base}:`, e.message);
     }
   }
@@ -563,7 +566,7 @@ export async function getCollection(config: PersonalEntryConfig): Promise<MovieC
   // Resolve individual movies in this collection
   const movieIds = config.movieIds || [];
   const movies = await Promise.all(
-    movieIds.map((id) => getMovie(id).catch(() => null))
+    movieIds.map((id) => getMovie(id).catch(() => getTVSeries(id) as unknown as Movie).catch(() => null))
   );
   const favoriteIds = config.favoriteMovieIds || [9615];
   const validMovies = movies
@@ -627,26 +630,34 @@ export async function getCollection(config: PersonalEntryConfig): Promise<MovieC
 }
 
 export async function fetchCollection(entries: PersonalEntryConfig[]): Promise<MediaItem[]> {
-  const promises = entries.map((entry) => {
-    if (entry.kind === 'collection') {
-      return getCollection(entry).catch((err) => {
-        console.error(`Failed to resolve collection ${entry.title}:`, err);
-        return null;
-      });
-    } else if (entry.kind === 'tv') {
-      return getTVSeries(entry.tmdbId!, entry.personalNotes).catch((err) => {
-        console.error(`Failed to resolve TV series ${entry.tmdbId}:`, err);
-        return null;
-      });
-    } else {
-      return getMovie(entry.tmdbId!, entry.personalNotes).catch((err) => {
-        console.error(`Failed to resolve movie ${entry.tmdbId}:`, err);
-        return null;
-      });
-    }
-  });
+  const results: (MediaItem | null)[] = [];
+  const BATCH_SIZE = 15;
 
-  const results = await Promise.all(promises);
+  for (let i = 0; i < entries.length; i += BATCH_SIZE) {
+    const batch = entries.slice(i, i + BATCH_SIZE);
+    const batchResults = await Promise.all(
+      batch.map((entry) => {
+        if (entry.kind === 'collection') {
+          return getCollection(entry).catch((err) => {
+            console.error(`Failed to resolve collection ${entry.title}:`, err);
+            return null;
+          });
+        } else if (entry.kind === 'tv') {
+          return getTVSeries(entry.tmdbId!, entry.personalNotes).catch((err) => {
+            console.error(`Failed to resolve TV series ${entry.tmdbId}:`, err);
+            return null;
+          });
+        } else {
+          return getMovie(entry.tmdbId!, entry.personalNotes).catch((err) => {
+            console.error(`Failed to resolve movie ${entry.tmdbId}:`, err);
+            return null;
+          });
+        }
+      })
+    );
+    results.push(...batchResults);
+  }
+
   const validItems = results.filter((item): item is MediaItem => item !== null);
 
   if (validItems.length === 0 && entries.length > 0) {

@@ -3,11 +3,12 @@ import type { MediaItem } from '../types/movie';
 
 interface MovieCardProps {
   item: MediaItem;
+  index?: number;
   isSelected?: boolean;
   onSelect: (item: MediaItem) => void;
 }
 
-export const MovieCard: React.FC<MovieCardProps> = ({ item, isSelected, onSelect }) => {
+export const MovieCard: React.FC<MovieCardProps> = ({ item, index, isSelected, onSelect }) => {
   const [hasImageError, setHasImageError] = useState(false);
   const cardRef = useRef<HTMLButtonElement>(null);
 
@@ -89,6 +90,9 @@ export const MovieCard: React.FC<MovieCardProps> = ({ item, isSelected, onSelect
       </div>
 
       <div className="movie-meta-info">
+        {index != null && (
+          <span className="cc__number-line">#{index + 1}</span>
+        )}
         <h3 className="movie-card-title">{item.title}</h3>
         <div className="movie-card-subrow">
           <span className="movie-card-year">{subtitle}</span>
