@@ -11,9 +11,9 @@ import { getWatchLinksForMovie } from '../data/watchLinks';
 import { getSavedReview } from './reviews';
 import { MIHIR_RATINGS_BY_TMDB_ID, MIHIR_RATINGS_BY_COLLECTION_ID } from '../data/mihirRatings';
 
-const TMDB_API_BASES = ['/api/tmdb', 'https://api.tmdb.org/3', 'https://api.themoviedb.org/3'];
+const TMDB_API_BASES = ['https://api.themoviedb.org/3', 'https://api.tmdb.org/3'];
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p';
-const CACHE_PREFIX = 'mfm_media_cache_v19_';
+const CACHE_PREFIX = 'mfm_media_cache_v20_';
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 Hours
 
 const ACCESS_TOKEN = import.meta.env.VITE_TMDB_ACCESS_TOKEN || import.meta.env.TMDB_ACCESS_TOKEN || '';
@@ -345,7 +345,7 @@ function normalizeTMDBTV(raw: any, personalNotes?: string): TVSeries {
 /**
  * Executes a live TMDB API request.
  */
-async function fetchFromTmdbApi(endpoint: string): Promise<any> {
+async function fetchFromTmdbApi(endpoint: string, retries = 2): Promise<any> {
   const headers: HeadersInit = {
     'Accept': 'application/json'
   };
@@ -365,15 +365,15 @@ async function fetchFromTmdbApi(endpoint: string): Promise<any> {
       const res = await fetch(url, { headers });
       if (res.ok) {
         return await res.json();
+      } else if (res.status === 429 && retries > 0) {
+        await new Promise((resolve) => setTimeout(resolve, 800));
+        return fetchFromTmdbApi(endpoint, retries - 1);
       } else {
         const errorText = await res.text();
         throw new Error(`TMDB HTTP ${res.status}: ${errorText}`);
       }
     } catch (e: any) {
       lastError = e;
-      if (e.message?.startsWith('TMDB HTTP')) {
-        break;
-      }
       console.warn(`TMDB request error on ${base}:`, e.message);
     }
   }
@@ -631,7 +631,7 @@ export async function getCollection(config: PersonalEntryConfig): Promise<MovieC
 
 export async function fetchCollection(entries: PersonalEntryConfig[]): Promise<MediaItem[]> {
   const results: (MediaItem | null)[] = [];
-  const BATCH_SIZE = 15;
+  const BATCH_SIZE = 12;
 
   for (let i = 0; i < entries.length; i += BATCH_SIZE) {
     const batch = entries.slice(i, i + BATCH_SIZE);
@@ -656,6 +656,10 @@ export async function fetchCollection(entries: PersonalEntryConfig[]): Promise<M
       })
     );
     results.push(...batchResults);
+
+    if (i + BATCH_SIZE < entries.length) {
+      await new Promise((resolve) => setTimeout(resolve, 60));
+    }
   }
 
   const validItems = results.filter((item): item is MediaItem => item !== null);
