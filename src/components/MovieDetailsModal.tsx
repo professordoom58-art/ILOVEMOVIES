@@ -4,6 +4,7 @@ import { Scoreboard } from './Scoreboard';
 import { CastLineup } from './CastLineup';
 import { ReviewSection } from './ReviewSection';
 import { ArrowUpRight, X } from 'lucide-react';
+import { getCustomGenre } from '../data/customGenres';
 
 interface MovieDetailsModalProps {
   movie: Movie | null;
@@ -13,6 +14,7 @@ interface MovieDetailsModalProps {
 
 export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({ movie, onClose, onScoreUpdated }) => {
   const [imgError, setImgError] = useState(false);
+  const customGenre = movie ? getCustomGenre(movie) : undefined;
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -73,9 +75,14 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({ movie, onC
           </div>
 
           <div className="modal-info-col">
-            <h2 id="modal-title" className="modal-movie-title">
-              {movie.title}
-            </h2>
+            <div className="modal-title-row">
+              <h2 id="modal-title" className="modal-movie-title">
+                {movie.title}
+              </h2>
+              {customGenre && (
+                <span className="card-genre-badge">{customGenre}</span>
+              )}
+            </div>
             
             <div className="detail-metadata-line">
               <span>{movie.year || '—'}</span>

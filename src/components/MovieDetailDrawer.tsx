@@ -3,6 +3,7 @@ import type { MediaItem, Movie } from '../types/movie';
 import { Scoreboard } from './Scoreboard';
 import { CastLineup } from './CastLineup';
 import { ArrowLeft, ArrowUpRight, Heart, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { getCustomGenre } from '../data/customGenres';
 
 interface MovieDetailDrawerProps {
   item: MediaItem | null;
@@ -52,6 +53,7 @@ export const MovieDetailDrawer: React.FC<MovieDetailDrawerProps> = ({
   // Determine what to display: if inside a collection and an individual movie is selected, show that movie
   const isViewingMovieInCollection = Boolean(activeMovieInCollection);
   const currentMedia: MediaItem = activeMovieInCollection || item;
+  const customGenre = getCustomGenre(currentMedia);
 
   const posterToRender = currentMedia.largePoster || currentMedia.poster;
   const showPoster = Boolean(posterToRender) && !hasPosterError;
@@ -142,7 +144,12 @@ export const MovieDetailDrawer: React.FC<MovieDetailDrawerProps> = ({
                 <div className="drawer-kind-pill">
                   <span>{currentMedia.tag}</span>
                 </div>
-                <h2 className="drawer-movie-title">{currentMedia.title}</h2>
+                <div className="drawer-title-row">
+                  <h2 className="drawer-movie-title">{currentMedia.title}</h2>
+                  {customGenre && (
+                    <span className="card-genre-badge">{customGenre}</span>
+                  )}
+                </div>
 
                 <div className="drawer-metadata-line">
                   <span>
@@ -268,7 +275,12 @@ export const MovieDetailDrawer: React.FC<MovieDetailDrawerProps> = ({
                   </div>
                 )}
 
-                <h2 className="drawer-movie-title">{currentMedia.title}</h2>
+                <div className="drawer-title-row">
+                  <h2 className="drawer-movie-title">{currentMedia.title}</h2>
+                  {customGenre && (
+                    <span className="card-genre-badge">{customGenre}</span>
+                  )}
+                </div>
 
                 {currentMedia.kind === 'movie' ? (
                   <>

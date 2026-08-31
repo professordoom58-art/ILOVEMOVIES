@@ -6,6 +6,11 @@ import type { MediaItem } from '../types/movie';
  */
 export const CUSTOM_GENRE_BY_ID: Record<string | number, string> = {
   // ── Explicit Custom Assigned Labels ────────────────────────────────────────
+  // Transformers (All entries & Collection)
+  91314: 'AUTOBOTS 4EVA',                  // 11. Transformers: Age of Extinction
+  'col-transformers-1-3': 'AUTOBOTS 4EVA', // 124. Transformers Collection — 1–3
+  8650: 'AUTOBOTS 4EVA',                   // TMDB Collection ID fallback
+
   // Don / Don 2
   17501: 'DON DON DON...',                 // Don (2006)
   41109: 'DON DON DON...',                 // Don 2 (2011)
@@ -25,10 +30,11 @@ export const CUSTOM_GENRE_BY_ID: Record<string | number, string> = {
   // Her
   152601: 'SCI-FI HORROR',                 // Her (2013)
 
-  // The Fall Guy / Crazy, Stupid, Love. / Game Over, Man!
+  // The Fall Guy / Crazy, Stupid, Love. / Game Over, Man! / The Nice Guys
   746036: 'COMEDY',                        // The Fall Guy
   50646: 'COMEDY',                         // Crazy, Stupid, Love.
   456750: 'COMEDY',                        // Game Over, Man!
+  290250: 'COMEDY',                        // The Nice Guys
 
   // A Clockwork Orange
   185: 'DARK GRITTY CRIME THRILLER',       // A Clockwork Orange
@@ -54,8 +60,12 @@ export const CUSTOM_GENRE_BY_ID: Record<string | number, string> = {
   353486: 'ADVENTURE',                     // Jumanji: Welcome to the Jungle
   512200: 'ADVENTURE',                     // Jumanji: The Next Level
 
-  // Central Intelligence
+  // Central Intelligence / Harry Potter / Pirates of the Caribbean
   302699: 'ACTION ADVENTURE',              // Central Intelligence
+  'col-harry-potter': 'ACTION ADVENTURE',  // Harry Potter Collection
+  1241: 'ACTION ADVENTURE',                // TMDB Collection ID fallback
+  'col-pirates-of-the-caribbean': 'ACTION ADVENTURE', // Pirates of the Caribbean Collection
+  295: 'ACTION ADVENTURE',                 // TMDB Collection ID fallback
 
   // Allu Arjun Movies
   443635: 'ALLU ARJUN PRIME',              // Duvvada Jagannadham (DJ)
@@ -78,8 +88,26 @@ export const CUSTOM_GENRE_BY_ID: Record<string | number, string> = {
   // Catch Me If You Can
   640: 'CRIME THRILLER',                   // Catch Me If You Can
 
-  // Superman (2025)
+  // DC IS SO BACK / DC HICCUP
   1061474: 'DC IS SO BACK',                // Superman (2025)
+  436270: 'DC HICCUP',                     // Black Adam
+
+  // SUPE GENRE REIMAGINED
+  13183: 'SUPE GENRE REIMAGINED',          // Watchmen (2009)
+  76479: 'SUPE GENRE REIMAGINED',          // The Boys
+
+  // ANIME (Every Anime / Animated Japanese Series)
+  1429: 'ANIME',                           // Attack on Titan
+  31911: 'ANIME',                          // Fullmetal Alchemist: Brotherhood
+  61223: 'ANIME',                          // Akame ga Kill!
+  127532: 'ANIME',                         // SPY × FAMILY
+  114410: 'ANIME',                         // Chainsaw Man
+  13916: 'ANIME',                          // Death Note
+  85937: 'ANIME',                          // Demon Slayer
+  62104: 'ANIME',                          // The Seven Deadly Sins
+  95479: 'ANIME',                          // Jujutsu Kaisen
+  30991: 'ANIME',                          // Cowboy Bebop
+  42509: 'ANIME',                          // Steins;Gate
 
   // ── Existing Custom Labels (Where Appropriate) ────────────────────────────
 
@@ -149,28 +177,27 @@ export const CUSTOM_GENRE_BY_ID: Record<string | number, string> = {
   215248: 'BOLLYWOOD',                     // Yevadu
   368006: 'BOLLYWOOD',                     // 24 (2016)
 
-  // SCI-FI SHENNANIGANS
-  300681: 'SCI-FI SHENNANIGANS',           // Replicas
-  62: 'SCI-FI SHENNANIGANS',               // 2001: A Space Odyssey
-  38: 'SCI-FI SHENNANIGANS',               // Eternal Sunshine of the Spotless Mind
-  141: 'SCI-FI SHENNANIGANS',              // Donnie Darko
-  1903: 'SCI-FI SHENNANIGANS',             // Vanilla Sky
-  180: 'SCI-FI SHENNANIGANS',              // Minority Report
-  75612: 'SCI-FI SHENNANIGANS',            // Oblivion
-  137113: 'SCI-FI SHENNANIGANS',           // Edge of Tomorrow
-  59967: 'SCI-FI SHENNANIGANS',            // Looper
-  'col-matrix-trilogy': 'SCI-FI SHENNANIGANS', // The Matrix Collection
-  188927: 'SCI-FI SHENNANIGANS',           // Star Trek Beyond
-  87421: 'SCI-FI SHENNANIGANS',            // Riddick
-  60625: 'SCI-FI SHENNANIGANS',            // Rick and Morty
-  42509: 'SCI-FI SHENNANIGANS',            // Steins;Gate
-  335984: 'SCI-FI SHENNANIGANS',           // Blade Runner 2049
-  27205: 'SCI-FI SHENNANIGANS',            // Inception
-  157336: 'SCI-FI SHENNANIGANS',           // Interstellar
-  286217: 'SCI-FI SHENNANIGANS',           // The Martian
-  687163: 'SCI-FI SHENNANIGANS',           // Project Hail Mary
-  71469: 'SCI-FI SHENNANIGANS',            // The Darkest Hour
-  72190: 'SCI-FI SHENNANIGANS',            // World War Z
+  // SCI-FI
+  300681: 'SCI-FI',                        // Replicas
+  62: 'SCI-FI',                            // 2001: A Space Odyssey
+  38: 'SCI-FI',                            // Eternal Sunshine of the Spotless Mind
+  141: 'SCI-FI',                           // Donnie Darko
+  1903: 'SCI-FI',                          // Vanilla Sky
+  180: 'SCI-FI',                           // Minority Report
+  75612: 'SCI-FI',                         // Oblivion
+  137113: 'SCI-FI',                        // Edge of Tomorrow
+  59967: 'SCI-FI',                         // Looper
+  'col-matrix-trilogy': 'SCI-FI',          // The Matrix Collection
+  188927: 'SCI-FI',                        // Star Trek Beyond
+  87421: 'SCI-FI',                         // Riddick
+  60625: 'SCI-FI',                         // Rick and Morty
+  335984: 'SCI-FI',                        // Blade Runner 2049
+  27205: 'SCI-FI',                         // Inception
+  157336: 'SCI-FI',                        // Interstellar
+  286217: 'SCI-FI',                        // The Martian
+  687163: 'SCI-FI',                        // Project Hail Mary
+  71469: 'SCI-FI',                         // The Darkest Hour
+  72190: 'SCI-FI',                         // World War Z
 
   // MARVELOUS
   299536: 'MARVELOUS',                     // Avengers: Infinity War

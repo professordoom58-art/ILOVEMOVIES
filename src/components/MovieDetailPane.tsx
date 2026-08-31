@@ -3,6 +3,7 @@ import type { Movie } from '../types/movie';
 import { Scoreboard } from './Scoreboard';
 import { CastLineup } from './CastLineup';
 import { ArrowLeft, ArrowUpRight } from 'lucide-react';
+import { getCustomGenre } from '../data/customGenres';
 
 interface MovieDetailPaneProps {
   movie: Movie | null;
@@ -22,6 +23,8 @@ export const MovieDetailPane: React.FC<MovieDetailPaneProps> = ({
       </div>
     );
   }
+
+  const customGenre = getCustomGenre(movie);
 
   return (
     <div className="movie-detail-pane" key={movie.tmdbId}>
