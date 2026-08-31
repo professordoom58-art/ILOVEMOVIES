@@ -69,7 +69,7 @@ export const Header: React.FC<HeaderProps> = ({
                 aria-label={isSearchOpen ? 'Close search' : 'Search catalog'}
                 title={isSearchOpen ? 'Close search' : 'Search catalog'}
               >
-                <Search size={15} strokeWidth={2} />
+                <Search size={13} strokeWidth={2} />
               </button>
             </div>
           </div>
@@ -84,7 +84,7 @@ export const Header: React.FC<HeaderProps> = ({
                 aria-label={isMuted ? 'Unmute background music' : 'Mute background music'}
                 title={isMuted ? 'Unmute background music' : 'Mute background music'}
               >
-                {isMuted ? <VolumeX size={15} strokeWidth={2} /> : <Volume2 size={15} strokeWidth={2} />}
+                {isMuted ? <VolumeX size={13} strokeWidth={2} /> : <Volume2 size={13} strokeWidth={2} />}
               </button>
             </div>
           )}
@@ -100,7 +100,7 @@ export const Header: React.FC<HeaderProps> = ({
               title="Carousel View"
               role="radio"
             >
-              <StretchHorizontal size={15} strokeWidth={2} />
+              <StretchHorizontal size={13} strokeWidth={2} />
             </button>
             <button
               type="button"
@@ -111,7 +111,7 @@ export const Header: React.FC<HeaderProps> = ({
               title="Grid View"
               role="radio"
             >
-              <Grid2x2 size={15} strokeWidth={2} />
+              <Grid2x2 size={13} strokeWidth={2} />
             </button>
           </div>
         </nav>

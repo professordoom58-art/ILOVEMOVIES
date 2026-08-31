@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { MediaItem } from '../types/movie';
@@ -19,6 +19,8 @@ export const CarouselGrid: React.FC<CarouselGridProps> = ({
   isLoading,
   hasError,
 }) => {
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
   const [emblaRef, emblaApi] = useEmblaCarousel({
     axis: 'x',
     loop: true,
@@ -39,6 +41,22 @@ export const CarouselGrid: React.FC<CarouselGridProps> = ({
 
   const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
+
+  const onSelect = useCallback(() => {
+    if (!emblaApi) return;
+    setSelectedIndex(emblaApi.selectedScrollSnap());
+  }, [emblaApi]);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    onSelect();
+    emblaApi.on('select', onSelect);
+    emblaApi.on('reInit', onSelect);
+    return () => {
+      emblaApi.off('select', onSelect);
+      emblaApi.off('reInit', onSelect);
+    };
+  }, [emblaApi, onSelect]);
 
   const hasInitializedRef = useRef(false);
 
@@ -138,6 +156,28 @@ export const CarouselGrid: React.FC<CarouselGridProps> = ({
     );
   }
 
+  const barCount = Math.min(items.length, 6);
+  const activeBarIndex =
+    items.length <= 6
+      ? selectedIndex % Math.max(1, items.length)
+      : Math.min(
+          barCount - 1,
+          Math.floor((selectedIndex / items.length) * barCount)
+        );
+
+  const handleBarClick = (idx: number) => {
+    if (!emblaApi) return;
+    if (items.length <= 6) {
+      emblaApi.scrollTo(idx);
+    } else {
+      const targetIndex = Math.min(
+        items.length - 1,
+        Math.round((idx / (barCount - 1)) * (items.length - 1))
+      );
+      emblaApi.scrollTo(targetIndex);
+    }
+  };
+
   return (
     <div className="embla-outer">
       {/* Embla root — viewport */}
@@ -165,6 +205,29 @@ export const CarouselGrid: React.FC<CarouselGridProps> = ({
           })}
         </div>
       </div>
+
+      {/* Visual Carousel Progress / Pagination Bar Indicator */}
+      {items.length > 1 && (
+        <div
+          className="carousel-progress-wrapper"
+          role="tablist"
+          aria-label="Carousel pagination"
+        >
+          {Array.from({ length: barCount }).map((_, idx) => (
+            <button
+              key={idx}
+              type="button"
+              role="tab"
+              aria-selected={idx === activeBarIndex}
+              aria-label={`Go to slide section ${idx + 1}`}
+              className={`carousel-progress-bar ${
+                idx === activeBarIndex ? 'active' : ''
+              }`}
+              onClick={() => handleBarClick(idx)}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Centered Bottom Navigation Controls */}
       <div className="carousel-bottom-controls">
