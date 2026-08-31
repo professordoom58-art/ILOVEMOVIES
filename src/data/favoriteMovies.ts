@@ -350,7 +350,7 @@ export const FAVORITE_MEDIA: PersonalEntryConfig[] = [
   // ── Comedy Specials (177–179) ─────────────────────────────────────────────
   { kind: 'movie', tmdbId: 1215439 }, // 177. Dave Chappelle: The Dreamer (9)
   { kind: 'movie', tmdbId: 701687 },  // 178. Mark Normand: Out to Lunch (10)
-  { kind: 'movie', tmdbId: 624932 }   // 179. Dave Chappelle: Sticks & Stones (UNRATED)
+  { kind: 'movie', tmdbId: 624932 }   // 179. Dave Chappelle: Sticks & Stones (9)
 ];
 
 // Backward compatibility export

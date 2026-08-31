@@ -167,7 +167,7 @@ export const MIHIR_RATINGS_BY_TMDB_ID: Record<number, number | string> = {
   // ── Comedy Specials (177–179) ─────────────────────────────────────────────
   1215439: 9,    // 177. Dave Chappelle: The Dreamer
   701687: 10,    // 178. Mark Normand: Out to Lunch
-  // 624932: UNRATED (179. Dave Chappelle: Sticks & Stones)
+  624932:  9,     // 179. Dave Chappelle: Sticks & Stones
 };
 
 /**
