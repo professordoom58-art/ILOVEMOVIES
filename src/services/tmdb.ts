@@ -13,7 +13,7 @@ import { MIHIR_RATINGS_BY_TMDB_ID, MIHIR_RATINGS_BY_COLLECTION_ID } from '../dat
 
 const TMDB_API_BASES = ['/api/tmdb', 'https://api.themoviedb.org/3', 'https://api.tmdb.org/3'];
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p';
-const CACHE_PREFIX = 'mfm_media_cache_v22_';
+const CACHE_PREFIX = 'mfm_media_cache_v23_';
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 Days
 
 const ACCESS_TOKEN = import.meta.env.VITE_TMDB_ACCESS_TOKEN || import.meta.env.TMDB_ACCESS_TOKEN || '';

@@ -8,7 +8,7 @@ import { MovieGrid } from './components/MovieGrid';
 import { MovieDetailDrawer } from './components/MovieDetailDrawer';
 
 const VIEW_MODE_STORAGE_KEY = 'mfm_view_mode';
-const CATALOG_SNAPSHOT_KEY = 'mfm_catalog_snapshot_v3';
+const CATALOG_SNAPSHOT_KEY = 'mfm_catalog_snapshot_v4';
 
 function getInitialCatalog(): MediaItem[] {
   try {
