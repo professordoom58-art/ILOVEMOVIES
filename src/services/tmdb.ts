@@ -13,16 +13,16 @@ import { MIHIR_RATINGS_BY_TMDB_ID, MIHIR_RATINGS_BY_COLLECTION_ID } from '../dat
 
 const TMDB_API_BASES = ['https://api.themoviedb.org/3', 'https://api.tmdb.org/3'];
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p';
-const CACHE_PREFIX = 'mfm_media_cache_v20_';
-const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 Hours
+const CACHE_PREFIX = 'mfm_media_cache_v22_';
+const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 Days
 
 const ACCESS_TOKEN = import.meta.env.VITE_TMDB_ACCESS_TOKEN || import.meta.env.TMDB_ACCESS_TOKEN || '';
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY || import.meta.env.TMDB_API_KEY || '4e44d9029b1270a757cddc766a1bcb63';
 
-/**
- * Central function to construct official TMDB image URLs.
- * Returns null if path is null/empty.
- */
+// In-memory runtime cache & in-flight promise deduplication
+const memoryCache = new Map<string, any>();
+const inFlightPromises = new Map<string, Promise<any>>();
+
 export function buildTmdbImageUrl(
   path: string | null | undefined,
   size: 'w185' | 'w342' | 'w500' | 'w780' | 'original' = 'w500'
@@ -81,7 +81,6 @@ function extractCast(credits: any, limit = 6): CastMember[] {
   }));
 }
 
-// Known verified external rating reference mappings
 const KNOWN_EXTERNAL_SCORES: Record<number, { imdbScore?: string; imdbVotes?: string; rottenTomatoes?: string; certification?: string }> = {
   18785: { imdbScore: '7.7 / 10', imdbVotes: '1.0M votes', rottenTomatoes: '79%', certification: 'R' },
   299536: { imdbScore: '8.4 / 10', imdbVotes: '1.2M votes', rottenTomatoes: '85%', certification: 'PG-13' },
@@ -104,9 +103,6 @@ const KNOWN_EXTERNAL_SCORES: Record<number, { imdbScore?: string; imdbVotes?: st
   37165: { imdbScore: '8.2 / 10', imdbVotes: '1.1M votes', rottenTomatoes: '95%', certification: 'PG' }
 };
 
-/**
- * Normalizes raw TMDB API response into application Movie structure.
- */
 function normalizeTMDBMovie(raw: TMDBMovieDetailsRaw, personalNotes?: string): Movie {
   const releaseYear = raw.release_date
     ? new Date(raw.release_date).getFullYear()
@@ -193,7 +189,6 @@ function extractYouCast(
     return found?.profile_path || null;
   };
 
-  // 1. Victoria Pedretti — Love Quinn
   const victoriaPath = findPath(victoriaFromApi, 'victoria pedretti');
   const victoriaMember: CastMember = {
     id: 2117434,
@@ -204,7 +199,6 @@ function extractYouCast(
     order: 0
   };
 
-  // 2. Elizabeth Lail — Guinevere Beck (TMDB ID: 1368507)
   const elizabethPath = findPath(elizabethFromApi, 'elizabeth lail');
   const elizabethMember: CastMember = {
     id: 1368507,
@@ -215,7 +209,6 @@ function extractYouCast(
     order: 1
   };
 
-  // 3. Shay Mitchell — Peach Salinger (TMDB Person ID: 222088)
   const shayPath = findPath(shayFromApi, 'shay mitchell');
   const shayMember: CastMember = {
     id: shayFromApi?.id || 222088,
@@ -226,7 +219,6 @@ function extractYouCast(
     order: 2
   };
 
-  // 4. James Scully — Forty Quinn (Resolved via TMDB people API)
   const jamesPath = findPath(jamesFromApi, 'james scully');
   const jamesMember: CastMember = {
     id: jamesFromApi?.id || 1803738,
@@ -237,7 +229,6 @@ function extractYouCast(
     order: 3
   };
 
-  // Excluded actors list per user directive
   const excludedNames = [
     'victoria pedretti',
     'elizabeth lail',
@@ -248,7 +239,6 @@ function extractYouCast(
     'madeline brewer'
   ];
 
-  // Remaining cast members (e.g. Penn Badgley - Joe Goldberg, etc.)
   const remaining = castList
     .filter((c: any) => {
       const name = c.name?.toLowerCase() || '';
@@ -267,9 +257,6 @@ function extractYouCast(
   return [victoriaMember, elizabethMember, shayMember, jamesMember, ...remaining];
 }
 
-/**
- * Normalizes raw TMDB TV API response into application TVSeries structure.
- */
 function normalizeTMDBTV(raw: any, personalNotes?: string): TVSeries {
   const firstYear = raw.first_air_date
     ? new Date(raw.first_air_date).getFullYear()
@@ -301,7 +288,7 @@ function normalizeTMDBTV(raw: any, personalNotes?: string): TVSeries {
       largePoster: posterW780 || posterW500,
       backdrop: backdropW1280,
       status: 'Ended',
-      cast: extractTrueDetectiveS1Cast(raw.credits),
+      cast: raw.credits ? extractTrueDetectiveS1Cast(raw.credits) : [],
       scores: {
         mihirScore: savedReview?.mihirScore ?? MIHIR_RATINGS_BY_TMDB_ID[46648] ?? 10,
         imdbScore: raw.vote_average ? `${Math.round(raw.vote_average * 10) / 10} / 10` : '8.9 / 10',
@@ -330,7 +317,11 @@ function normalizeTMDBTV(raw: any, personalNotes?: string): TVSeries {
     largePoster: posterW780 || posterW500,
     backdrop: backdropW1280,
     status: raw.status,
-    cast: raw.id === 78191 ? extractYouCast(raw.credits, raw.victoriaPedretti, raw.elizabethLail, raw.shayMitchell, raw.jamesScully) : extractCast(raw.credits, 6),
+    cast: raw.credits
+      ? (raw.id === 78191
+          ? extractYouCast(raw.credits, raw.victoriaPedretti, raw.elizabethLail, raw.shayMitchell, raw.jamesScully)
+          : extractCast(raw.credits, 6))
+      : [],
     scores: {
       mihirScore: savedReview?.mihirScore ?? MIHIR_RATINGS_BY_TMDB_ID[raw.id] ?? null,
       imdbScore: raw.vote_average ? `${Math.round(raw.vote_average * 10) / 10} / 10` : null,
@@ -343,209 +334,290 @@ function normalizeTMDBTV(raw: any, personalNotes?: string): TVSeries {
 }
 
 /**
- * Executes a live TMDB API request.
+ * Executes a live TMDB API request with deduplication & retry.
  */
 async function fetchFromTmdbApi(endpoint: string, retries = 2): Promise<any> {
-  const headers: HeadersInit = {
-    'Accept': 'application/json'
-  };
-
-  if (ACCESS_TOKEN) {
-    headers['Authorization'] = `Bearer ${ACCESS_TOKEN}`;
+  const reqKey = `api_${endpoint}`;
+  if (inFlightPromises.has(reqKey)) {
+    return inFlightPromises.get(reqKey);
   }
 
-  let lastError: Error | null = null;
+  const promise = (async () => {
+    const headers: HeadersInit = {
+      'Accept': 'application/json'
+    };
 
-  for (const base of TMDB_API_BASES) {
-    const separator = endpoint.includes('?') ? '&' : '?';
-    const authQuery = !ACCESS_TOKEN && API_KEY ? `${separator}api_key=${API_KEY}` : '';
-    const url = `${base}${endpoint}${authQuery}`;
-
-    try {
-      const res = await fetch(url, { headers });
-      if (res.ok) {
-        return await res.json();
-      } else if (res.status === 429 && retries > 0) {
-        await new Promise((resolve) => setTimeout(resolve, 800));
-        return fetchFromTmdbApi(endpoint, retries - 1);
-      } else {
-        const errorText = await res.text();
-        throw new Error(`TMDB HTTP ${res.status}: ${errorText}`);
-      }
-    } catch (e: any) {
-      lastError = e;
-      console.warn(`TMDB request error on ${base}:`, e.message);
+    if (ACCESS_TOKEN) {
+      headers['Authorization'] = `Bearer ${ACCESS_TOKEN}`;
     }
-  }
 
-  throw lastError || new Error(`Failed to fetch from TMDB endpoint: ${endpoint}`);
+    let lastError: Error | null = null;
+
+    for (const base of TMDB_API_BASES) {
+      const separator = endpoint.includes('?') ? '&' : '?';
+      const authQuery = !ACCESS_TOKEN && API_KEY ? `${separator}api_key=${API_KEY}` : '';
+      const url = `${base}${endpoint}${authQuery}`;
+
+      try {
+        const res = await fetch(url, { headers });
+        if (res.ok) {
+          return await res.json();
+        } else if (res.status === 429 && retries > 0) {
+          await new Promise((resolve) => setTimeout(resolve, 600));
+          return fetchFromTmdbApi(endpoint, retries - 1);
+        } else {
+          const errorText = await res.text();
+          throw new Error(`TMDB HTTP ${res.status}: ${errorText}`);
+        }
+      } catch (e: any) {
+        lastError = e;
+        console.warn(`TMDB request error on ${base}:`, e.message);
+      }
+    }
+
+    throw lastError || new Error(`Failed to fetch from TMDB endpoint: ${endpoint}`);
+  })();
+
+  inFlightPromises.set(reqKey, promise);
+  try {
+    return await promise;
+  } finally {
+    inFlightPromises.delete(reqKey);
+  }
 }
 
-export async function getMovie(tmdbId: number, personalNotes?: string): Promise<Movie> {
-  const cacheKey = `${CACHE_PREFIX}movie_${tmdbId}`;
-
+function getFromStorage(key: string): any | null {
+  if (memoryCache.has(key)) {
+    return memoryCache.get(key);
+  }
   try {
-    const cachedItem = localStorage.getItem(cacheKey);
-    if (cachedItem) {
-      const parsed = JSON.parse(cachedItem);
+    const item = localStorage.getItem(key);
+    if (item) {
+      const parsed = JSON.parse(item);
       if (Date.now() - parsed.timestamp < CACHE_TTL_MS && parsed.data) {
-        const savedReview = getSavedReview(tmdbId);
-        return {
-          ...parsed.data,
-          scores: {
-            ...parsed.data.scores,
-            mihirScore: savedReview?.mihirScore ?? MIHIR_RATINGS_BY_TMDB_ID[tmdbId] ?? parsed.data.scores.mihirScore ?? null
-          },
-          watchLinks: getWatchLinksForMovie(tmdbId),
-          personalNotes
-        };
+        memoryCache.set(key, parsed.data);
+        return parsed.data;
       }
     }
   } catch (e) {
-    console.warn('Cache read error:', e);
+    console.warn('Storage read error:', e);
+  }
+  return null;
+}
+
+function setToStorage(key: string, data: any): void {
+  memoryCache.set(key, data);
+  try {
+    localStorage.setItem(key, JSON.stringify({ data, timestamp: Date.now() }));
+  } catch (e) {
+    console.warn('Storage write error:', e);
+  }
+}
+
+/**
+ * Fetch lightweight movie data (sufficient for card/grid rendering).
+ */
+export async function getMovie(tmdbId: number, personalNotes?: string, full = false): Promise<Movie> {
+  const fullCacheKey = `${CACHE_PREFIX}movie_full_${tmdbId}`;
+  const basicCacheKey = `${CACHE_PREFIX}movie_${tmdbId}`;
+
+  // If full was requested, check full cache first
+  if (full) {
+    const cachedFull = getFromStorage(fullCacheKey);
+    if (cachedFull) {
+      const savedReview = getSavedReview(tmdbId);
+      return {
+        ...cachedFull,
+        scores: {
+          ...cachedFull.scores,
+          mihirScore: savedReview?.mihirScore ?? MIHIR_RATINGS_BY_TMDB_ID[tmdbId] ?? cachedFull.scores.mihirScore ?? null
+        },
+        watchLinks: getWatchLinksForMovie(tmdbId),
+        personalNotes
+      };
+    }
+  } else {
+    // If basic was requested, either full or basic cache is fine
+    const cached = getFromStorage(fullCacheKey) || getFromStorage(basicCacheKey);
+    if (cached) {
+      const savedReview = getSavedReview(tmdbId);
+      return {
+        ...cached,
+        scores: {
+          ...cached.scores,
+          mihirScore: savedReview?.mihirScore ?? MIHIR_RATINGS_BY_TMDB_ID[tmdbId] ?? cached.scores.mihirScore ?? null
+        },
+        watchLinks: getWatchLinksForMovie(tmdbId),
+        personalNotes
+      };
+    }
   }
 
-  const rawData: TMDBMovieDetailsRaw = await fetchFromTmdbApi(
-    `/movie/${tmdbId}?append_to_response=credits,external_ids`
-  );
+  const endpoint = full
+    ? `/movie/${tmdbId}?append_to_response=credits,external_ids`
+    : `/movie/${tmdbId}`;
+
+  const rawData: TMDBMovieDetailsRaw = await fetchFromTmdbApi(endpoint);
   const normalizedMovie = normalizeTMDBMovie(rawData, personalNotes);
 
-  try {
-    localStorage.setItem(cacheKey, JSON.stringify({ data: normalizedMovie, timestamp: Date.now() }));
-  } catch (e) {
-    console.warn('Cache write error:', e);
+  if (full) {
+    setToStorage(fullCacheKey, normalizedMovie);
+  } else {
+    setToStorage(basicCacheKey, normalizedMovie);
   }
 
   return normalizedMovie;
 }
 
-export async function getTVSeries(tmdbId: number, personalNotes?: string): Promise<TVSeries> {
-  const cacheKey = `${CACHE_PREFIX}tv_${tmdbId}`;
+/**
+ * Explicitly loads full movie details (credits, crew, director, ratings).
+ */
+export async function getFullMovie(tmdbId: number, personalNotes?: string): Promise<Movie> {
+  return getMovie(tmdbId, personalNotes, true);
+}
 
-  try {
-    const cachedItem = localStorage.getItem(cacheKey);
-    if (cachedItem) {
-      const parsed = JSON.parse(cachedItem);
-      if (Date.now() - parsed.timestamp < CACHE_TTL_MS && parsed.data) {
-        const savedReview = getSavedReview(tmdbId);
-        return {
-          ...parsed.data,
-          scores: {
-            ...parsed.data.scores,
-            mihirScore: savedReview?.mihirScore ?? MIHIR_RATINGS_BY_TMDB_ID[tmdbId] ?? parsed.data.scores.mihirScore ?? null
-          },
-          watchLinks: getWatchLinksForMovie(tmdbId),
-          personalNotes
-        };
-      }
+/**
+ * Fetch lightweight TV series data.
+ */
+export async function getTVSeries(tmdbId: number, personalNotes?: string, full = false): Promise<TVSeries> {
+  const fullCacheKey = `${CACHE_PREFIX}tv_full_${tmdbId}`;
+  const basicCacheKey = `${CACHE_PREFIX}tv_${tmdbId}`;
+
+  if (full) {
+    const cachedFull = getFromStorage(fullCacheKey);
+    if (cachedFull) {
+      const savedReview = getSavedReview(tmdbId);
+      return {
+        ...cachedFull,
+        scores: {
+          ...cachedFull.scores,
+          mihirScore: savedReview?.mihirScore ?? MIHIR_RATINGS_BY_TMDB_ID[tmdbId] ?? cachedFull.scores.mihirScore ?? null
+        },
+        watchLinks: getWatchLinksForMovie(tmdbId),
+        personalNotes
+      };
     }
-  } catch (e) {
-    console.warn('Cache read error:', e);
+  } else {
+    const cached = getFromStorage(fullCacheKey) || getFromStorage(basicCacheKey);
+    if (cached) {
+      const savedReview = getSavedReview(tmdbId);
+      return {
+        ...cached,
+        scores: {
+          ...cached.scores,
+          mihirScore: savedReview?.mihirScore ?? MIHIR_RATINGS_BY_TMDB_ID[tmdbId] ?? cached.scores.mihirScore ?? null
+        },
+        watchLinks: getWatchLinksForMovie(tmdbId),
+        personalNotes
+      };
+    }
   }
 
-  let rawData = await fetchFromTmdbApi(`/tv/${tmdbId}?append_to_response=credits,external_ids`);
+  const endpoint = full
+    ? `/tv/${tmdbId}?append_to_response=credits,external_ids`
+    : `/tv/${tmdbId}`;
 
-  if (tmdbId === 46648) {
-    try {
-      const s1Credits = await fetchFromTmdbApi(`/tv/46648/season/1/credits`);
-      if (s1Credits && s1Credits.cast) {
-        rawData = {
-          ...rawData,
-          credits: s1Credits
-        };
+  let rawData = await fetchFromTmdbApi(endpoint);
+
+  if (full) {
+    if (tmdbId === 46648) {
+      try {
+        const s1Credits = await fetchFromTmdbApi(`/tv/46648/season/1/credits`);
+        if (s1Credits && s1Credits.cast) {
+          rawData = { ...rawData, credits: s1Credits };
+        }
+      } catch (err) {
+        console.warn('Could not fetch True Detective Season 1 credits:', err);
       }
-    } catch (err) {
-      console.warn('Could not fetch True Detective Season 1 credits:', err);
-    }
-  } else if (tmdbId === 78191) {
-    try {
-      const [victoriaData, elizabethData, shayData, jamesSearchRes] = await Promise.all([
-        fetchFromTmdbApi(`/person/2117434`).catch(() => null),
-        fetchFromTmdbApi(`/person/1368507`).catch(() => null),
-        fetchFromTmdbApi(`/person/222088`).catch(() => null),
-        fetchFromTmdbApi(`/search/person?query=James%20Scully`).catch(() => null)
-      ]);
+    } else if (tmdbId === 78191) {
+      try {
+        const [victoriaData, elizabethData, shayData, jamesSearchRes] = await Promise.all([
+          fetchFromTmdbApi(`/person/2117434`).catch(() => null),
+          fetchFromTmdbApi(`/person/1368507`).catch(() => null),
+          fetchFromTmdbApi(`/person/222088`).catch(() => null),
+          fetchFromTmdbApi(`/search/person?query=James%20Scully`).catch(() => null)
+        ]);
 
-      let jamesData: any = null;
-      if (jamesSearchRes && jamesSearchRes.results && jamesSearchRes.results.length > 0) {
-        jamesData = jamesSearchRes.results.find((p: any) =>
-          p.name?.toLowerCase().includes('james scully')
-        ) || jamesSearchRes.results[0];
+        let jamesData: any = null;
+        if (jamesSearchRes && jamesSearchRes.results && jamesSearchRes.results.length > 0) {
+          jamesData = jamesSearchRes.results.find((p: any) =>
+            p.name?.toLowerCase().includes('james scully')
+          ) || jamesSearchRes.results[0];
 
-        if (jamesData && !jamesData.profile_path && jamesData.id) {
-          try {
-            const jamesDirect = await fetchFromTmdbApi(`/person/${jamesData.id}`);
-            if (jamesDirect && jamesDirect.profile_path) {
-              jamesData = jamesDirect;
+          if (jamesData && !jamesData.profile_path && jamesData.id) {
+            try {
+              const jamesDirect = await fetchFromTmdbApi(`/person/${jamesData.id}`);
+              if (jamesDirect && jamesDirect.profile_path) {
+                jamesData = jamesDirect;
+              }
+            } catch (e) {
+              console.warn('James Scully direct fetch error:', e);
             }
-          } catch (e) {
-            console.warn('James Scully direct fetch error:', e);
           }
         }
-      }
 
-      rawData = {
-        ...rawData,
-        victoriaPedretti: victoriaData ? {
-          id: 2117434,
-          name: 'Victoria Pedretti',
-          character: 'Love Quinn',
-          profile_path: victoriaData.profile_path || null,
-          profilePath: victoriaData.profile_path || null
-        } : undefined,
-        elizabethLail: elizabethData ? {
-          id: 1368507,
-          name: 'Elizabeth Lail',
-          character: 'Guinevere Beck',
-          profile_path: elizabethData.profile_path || null,
-          profilePath: elizabethData.profile_path || null
-        } : undefined,
-        shayMitchell: shayData ? {
-          id: 222088,
-          name: 'Shay Mitchell',
-          character: 'Peach Salinger',
-          profile_path: shayData.profile_path || null,
-          profilePath: shayData.profile_path || null
-        } : undefined,
-        jamesScully: jamesData ? {
-          id: jamesData.id,
-          name: 'James Scully',
-          character: 'Forty Quinn',
-          profile_path: jamesData.profile_path || null,
-          profilePath: jamesData.profile_path || null
-        } : undefined
-      };
-    } catch (err) {
-      console.warn('Could not fetch You series cast person data:', err);
+        rawData = {
+          ...rawData,
+          victoriaPedretti: victoriaData ? {
+            id: 2117434,
+            name: 'Victoria Pedretti',
+            character: 'Love Quinn',
+            profile_path: victoriaData.profile_path || null,
+            profilePath: victoriaData.profile_path || null
+          } : undefined,
+          elizabethLail: elizabethData ? {
+            id: 1368507,
+            name: 'Elizabeth Lail',
+            character: 'Guinevere Beck',
+            profile_path: elizabethData.profile_path || null,
+            profilePath: elizabethData.profile_path || null
+          } : undefined,
+          shayMitchell: shayData ? {
+            id: 222088,
+            name: 'Shay Mitchell',
+            character: 'Peach Salinger',
+            profile_path: shayData.profile_path || null,
+            profilePath: shayData.profile_path || null
+          } : undefined,
+          jamesScully: jamesData ? {
+            id: jamesData?.id || 1803738,
+            name: 'James Scully',
+            character: 'Forty Quinn',
+            profile_path: jamesData.profile_path || null,
+            profilePath: jamesData.profile_path || null
+          } : undefined
+        };
+      } catch (err) {
+        console.warn('Could not fetch You series cast person data:', err);
+      }
     }
   }
 
   const normalizedTV = normalizeTMDBTV(rawData, personalNotes);
 
-  try {
-    localStorage.setItem(cacheKey, JSON.stringify({ data: normalizedTV, timestamp: Date.now() }));
-  } catch (e) {
-    console.warn('Cache write error:', e);
+  if (full) {
+    setToStorage(fullCacheKey, normalizedTV);
+  } else {
+    setToStorage(basicCacheKey, normalizedTV);
   }
 
   return normalizedTV;
 }
 
+export async function getFullTVSeries(tmdbId: number, personalNotes?: string): Promise<TVSeries> {
+  return getTVSeries(tmdbId, personalNotes, true);
+}
+
+/**
+ * Fetch collection summary (does not eagerly fetch all internal movies).
+ */
 export async function getCollection(config: PersonalEntryConfig): Promise<MovieCollection> {
   const collectionId = config.id || `col_${config.tmdbCollectionId || config.title}`;
   const cacheKey = `${CACHE_PREFIX}collection_${collectionId}`;
 
-  // Check cache
-  try {
-    const cachedItem = localStorage.getItem(cacheKey);
-    if (cachedItem) {
-      const parsed = JSON.parse(cachedItem);
-      if (Date.now() - parsed.timestamp < CACHE_TTL_MS && parsed.data) {
-        return parsed.data;
-      }
-    }
-  } catch (e) {
-    console.warn('Cache read error:', e);
+  const cached = getFromStorage(cacheKey);
+  if (cached) {
+    return cached;
   }
 
   let collectionPosterPath = config.customPosterPath || null;
@@ -563,42 +635,19 @@ export async function getCollection(config: PersonalEntryConfig): Promise<MovieC
     }
   }
 
-  // Resolve individual movies in this collection
-  const movieIds = config.movieIds || [];
-  const movies = await Promise.all(
-    movieIds.map((id) => getMovie(id).catch(() => getTVSeries(id) as unknown as Movie).catch(() => null))
-  );
-  const favoriteIds = config.favoriteMovieIds || [9615];
-  const validMovies = movies
-    .filter((m): m is Movie => m !== null)
-    .map((m) => {
-      if (favoriteIds.includes(m.tmdbId) || m.tmdbId === 9615) {
-        return { ...m, isFavorite: true };
-      }
-      return m;
-    });
-
-  // Sort movies chronologically
-  validMovies.sort((a, b) => (a.year || 0) - (b.year || 0));
-
-  // Determine years covered
-  let yearsCovered: string | undefined;
-  if (validMovies.length > 0) {
-    const years = validMovies.map((m) => m.year).filter((y) => y > 0);
-    if (years.length > 0) {
-      const minYear = Math.min(...years);
-      const maxYear = Math.max(...years);
-      yearsCovered = minYear === maxYear ? `${minYear}` : `${minYear}–${maxYear}`;
+  // Fallback to first movie poster if no collection poster
+  if (!collectionPosterPath && config.movieIds && config.movieIds.length > 0) {
+    try {
+      const firstMovie = await getMovie(config.movieIds[0]);
+      collectionPosterPath = firstMovie.posterPath || null;
+    } catch {
+      // Continue with empty poster
     }
   }
 
-  // If collection has no poster, use the poster of the first film
-  if (!collectionPosterPath && validMovies.length > 0) {
-    collectionPosterPath = validMovies[0].posterPath || null;
-  }
-
-  const posterW500 = buildTmdbImageUrl(collectionPosterPath, 'w500') || (validMovies[0]?.poster || '');
-  const posterW780 = buildTmdbImageUrl(collectionPosterPath, 'w780') || (validMovies[0]?.largePoster || posterW500);
+  const posterW500 = buildTmdbImageUrl(collectionPosterPath, 'w500') || '';
+  const posterW780 = buildTmdbImageUrl(collectionPosterPath, 'w780') || posterW500;
+  const movieCount = config.movieIds?.length || 0;
 
   const collectionItem: MovieCollection = {
     kind: 'collection',
@@ -608,59 +657,78 @@ export async function getCollection(config: PersonalEntryConfig): Promise<MovieC
     tag: config.tag || 'COLLECTION',
     poster: posterW500,
     largePoster: posterW780,
-    overview: collectionOverview || `A curated collection of ${validMovies.length} films.`,
-    movieCount: validMovies.length,
-    yearsCovered,
-    movieIds,
-    movies: validMovies,
+    overview: collectionOverview || `A curated collection of ${movieCount} films.`,
+    movieCount,
+    movieIds: config.movieIds || [],
+    movies: [], // Populated on-demand via getCollectionMovies
     scores: {
       mihirScore: MIHIR_RATINGS_BY_COLLECTION_ID[collectionId] ?? null
     },
     watchLinks: getWatchLinksForMovie(config.tmdbCollectionId || 0),
-    personalNotes: config.personalNotes
+    personalNotes: config.personalNotes,
+    favoriteMovieIds: config.favoriteMovieIds
   };
 
-  try {
-    localStorage.setItem(cacheKey, JSON.stringify({ data: collectionItem, timestamp: Date.now() }));
-  } catch (e) {
-    console.warn('Cache write error:', e);
-  }
-
+  setToStorage(cacheKey, collectionItem);
   return collectionItem;
 }
 
+/**
+ * Lazy-load all movies within a collection when viewed.
+ */
+export async function getCollectionMovies(collection: MovieCollection | PersonalEntryConfig): Promise<Movie[]> {
+  const movieIds = collection.movieIds || [];
+  if (movieIds.length === 0) return [];
+
+  const movies = await Promise.all(
+    movieIds.map((id) =>
+      getMovie(id).catch(() => getTVSeries(id) as unknown as Movie).catch(() => null)
+    )
+  );
+
+  const favoriteIds = collection.favoriteMovieIds || [9615];
+  const validMovies = movies
+    .filter((m): m is Movie => m !== null)
+    .map((m) => {
+      if (favoriteIds.includes(m.tmdbId) || m.tmdbId === 9615) {
+        return { ...m, isFavorite: true };
+      }
+      return m;
+    });
+
+  validMovies.sort((a, b) => (a.year || 0) - (b.year || 0));
+  return validMovies;
+}
+
+/**
+ * Rapid concurrent catalog loader with concurrency limit.
+ */
 export async function fetchCollection(entries: PersonalEntryConfig[]): Promise<MediaItem[]> {
-  const results: (MediaItem | null)[] = [];
-  const BATCH_SIZE = 12;
+  const CONCURRENCY = 20;
+  const results: (MediaItem | null)[] = new Array(entries.length).fill(null);
 
-  for (let i = 0; i < entries.length; i += BATCH_SIZE) {
-    const batch = entries.slice(i, i + BATCH_SIZE);
-    const batchResults = await Promise.all(
-      batch.map((entry) => {
+  let activeIndex = 0;
+  async function worker() {
+    while (activeIndex < entries.length) {
+      const idx = activeIndex++;
+      const entry = entries[idx];
+      try {
         if (entry.kind === 'collection') {
-          return getCollection(entry).catch((err) => {
-            console.error(`Failed to resolve collection ${entry.title}:`, err);
-            return null;
-          });
+          results[idx] = await getCollection(entry);
         } else if (entry.kind === 'tv') {
-          return getTVSeries(entry.tmdbId!, entry.personalNotes).catch((err) => {
-            console.error(`Failed to resolve TV series ${entry.tmdbId}:`, err);
-            return null;
-          });
+          results[idx] = await getTVSeries(entry.tmdbId!, entry.personalNotes);
         } else {
-          return getMovie(entry.tmdbId!, entry.personalNotes).catch((err) => {
-            console.error(`Failed to resolve movie ${entry.tmdbId}:`, err);
-            return null;
-          });
+          results[idx] = await getMovie(entry.tmdbId!, entry.personalNotes);
         }
-      })
-    );
-    results.push(...batchResults);
-
-    if (i + BATCH_SIZE < entries.length) {
-      await new Promise((resolve) => setTimeout(resolve, 60));
+      } catch (err) {
+        console.error(`Failed to resolve entry ${entry.tmdbId || entry.title}:`, err);
+        results[idx] = null;
+      }
     }
   }
+
+  const workers = Array.from({ length: Math.min(CONCURRENCY, entries.length) }, () => worker());
+  await Promise.all(workers);
 
   const validItems = results.filter((item): item is MediaItem => item !== null);
 

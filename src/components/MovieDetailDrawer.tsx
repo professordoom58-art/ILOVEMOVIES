@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import type { MediaItem, Movie } from '../types/movie';
+import type { MediaItem, Movie, MovieCollection } from '../types/movie';
 import { Scoreboard } from './Scoreboard';
 import { CastLineup } from './CastLineup';
 import { ArrowLeft, ArrowUpRight, Heart, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getCustomGenre } from '../data/customGenres';
+import { getFullMovie, getFullTVSeries, getCollectionMovies } from '../services/tmdb';
 
 interface MovieDetailDrawerProps {
   item: MediaItem | null;
@@ -22,11 +23,56 @@ export const MovieDetailDrawer: React.FC<MovieDetailDrawerProps> = ({
 }) => {
   const [activeMovieInCollection, setActiveMovieInCollection] = useState<Movie | null>(null);
   const [hasPosterError, setHasPosterError] = useState(false);
+  const [detailedMedia, setDetailedMedia] = useState<MediaItem | null>(null);
+  const [collectionFilms, setCollectionFilms] = useState<Movie[]>([]);
 
   useEffect(() => {
     setActiveMovieInCollection(null);
     setHasPosterError(false);
+    setDetailedMedia(item);
+    if (item && item.kind === 'collection') {
+      setCollectionFilms(item.movies && item.movies.length > 0 ? item.movies : []);
+    }
   }, [item]);
+
+  // Lazy-load rich details / cast / collection films on drawer open
+  useEffect(() => {
+    if (!isOpen || !item) return;
+    let isMounted = true;
+
+    if (activeMovieInCollection) {
+      if (!activeMovieInCollection.cast || activeMovieInCollection.cast.length === 0) {
+        getFullMovie(activeMovieInCollection.tmdbId).then((full) => {
+          if (isMounted) setActiveMovieInCollection(full);
+        }).catch(console.error);
+      }
+    } else if (item.kind === 'movie') {
+      if (!item.cast || item.cast.length === 0 || !item.director) {
+        getFullMovie(item.tmdbId).then((full) => {
+          if (isMounted) setDetailedMedia(full);
+        }).catch(console.error);
+      }
+    } else if (item.kind === 'tv') {
+      if (!item.cast || item.cast.length === 0 || !item.creator) {
+        getFullTVSeries(item.tmdbId).then((full) => {
+          if (isMounted) setDetailedMedia(full);
+        }).catch(console.error);
+      }
+    } else if (item.kind === 'collection') {
+      if (collectionFilms.length === 0) {
+        getCollectionMovies(item).then((movies) => {
+          if (isMounted) {
+            setCollectionFilms(movies);
+            setDetailedMedia((prev) => (prev ? { ...(prev as MovieCollection), movies } : prev));
+          }
+        }).catch(console.error);
+      }
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isOpen, item, activeMovieInCollection, collectionFilms.length]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -52,7 +98,7 @@ export const MovieDetailDrawer: React.FC<MovieDetailDrawerProps> = ({
 
   // Determine what to display: if inside a collection and an individual movie is selected, show that movie
   const isViewingMovieInCollection = Boolean(activeMovieInCollection);
-  const currentMedia: MediaItem = activeMovieInCollection || item;
+  const currentMedia: MediaItem = activeMovieInCollection || detailedMedia || item;
   const customGenre = getCustomGenre(currentMedia);
 
   const posterToRender = currentMedia.largePoster || currentMedia.poster;
@@ -197,21 +243,24 @@ export const MovieDetailDrawer: React.FC<MovieDetailDrawerProps> = ({
             )}
 
             {/* Individual Films in Saga */}
-            <section className="collection-movies-section" aria-label="Films in this collection">
-              <div className="section-divider-row">
-                <h3 className="drawer-section-heading">
-                  FILMS IN THIS {currentMedia.tag} ({currentMedia.movies?.length || 0})
-                </h3>
-              </div>
+            {(() => {
+              const activeCollectionFilms = collectionFilms.length > 0 ? collectionFilms : (currentMedia as MovieCollection).movies || [];
+              return (
+                <section className="collection-movies-section" aria-label="Films in this collection">
+                  <div className="section-divider-row">
+                    <h3 className="drawer-section-heading">
+                      FILMS IN THIS {currentMedia.tag} ({activeCollectionFilms.length || (currentMedia as MovieCollection).movieCount || 0})
+                    </h3>
+                  </div>
 
-              <div className="collection-movies-grid">
-                {currentMedia.movies?.map((m) => (
-                  <button
-                    key={m.tmdbId}
-                    type="button"
-                    className="collection-film-card"
-                    onClick={() => setActiveMovieInCollection(m)}
-                  >
+                  <div className="collection-movies-grid">
+                    {activeCollectionFilms.map((m) => (
+                      <button
+                        key={m.tmdbId}
+                        type="button"
+                        className="collection-film-card"
+                        onClick={() => setActiveMovieInCollection(m)}
+                      >
                     <div className="collection-film-poster-frame">
                       {m.poster ? (
                         <img
@@ -241,6 +290,8 @@ export const MovieDetailDrawer: React.FC<MovieDetailDrawerProps> = ({
                 ))}
               </div>
             </section>
+              );
+            })()}
           </div>
         ) : (
           /* ===================================================================

@@ -8,10 +8,26 @@ import { MovieGrid } from './components/MovieGrid';
 import { MovieDetailDrawer } from './components/MovieDetailDrawer';
 
 const VIEW_MODE_STORAGE_KEY = 'mfm_view_mode';
+const CATALOG_SNAPSHOT_KEY = 'mfm_catalog_snapshot_v3';
+
+function getInitialCatalog(): MediaItem[] {
+  try {
+    const raw = localStorage.getItem(CATALOG_SNAPSHOT_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch {
+    // Ignore storage parse error
+  }
+  return [];
+}
 
 export function App() {
-  const [items, setItems] = useState<MediaItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [items, setItems] = useState<MediaItem[]>(getInitialCatalog);
+  const [isLoading, setIsLoading] = useState<boolean>(() => getInitialCatalog().length === 0);
   const [error, setError] = useState<string | null>(null);
   const [selectedItemId, setSelectedItemId] = useState<string | number | null>(null);
 
@@ -95,14 +111,18 @@ export function App() {
 
     async function loadMediaData() {
       try {
-        setIsLoading(true);
-        setError(null);
         const fetchedItems = await fetchCollection(FAVORITE_MEDIA);
         if (isMounted) {
           setItems(fetchedItems);
+          setError(null);
+          try {
+            localStorage.setItem(CATALOG_SNAPSHOT_KEY, JSON.stringify(fetchedItems));
+          } catch {
+            // Ignore quota errors
+          }
         }
       } catch (err: any) {
-        if (isMounted) {
+        if (isMounted && items.length === 0) {
           setError('Unable to load collection. Please check your network connection.');
           console.error('Error fetching collection:', err);
         }
