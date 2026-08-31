@@ -174,20 +174,20 @@ export const MIHIR_RATINGS_BY_TMDB_ID: Record<number, number | string> = {
  * Collection ratings keyed by collection `id` string (from favoriteMovies.ts).
  */
 export const MIHIR_RATINGS_BY_COLLECTION_ID: Record<string, number | string> = {
-  'col-transformers-1-3':          9,    // 124. Transformers Saga — Films 1–3
-  'col-fast-furious-1-7':          9,    // 125. Fast & Furious Saga — Films 1–7
+  'col-transformers-1-3':          9,    // 124. Transformers Collection — Films 1–3
+  'col-fast-furious-1-7':          9,    // 125. Fast & Furious Collection — Films 1–7
   'col-kill-bill':                 8.5,  // 126. Kill Bill — Vol. 1 & 2
-  'col-bourne-saga':               9,    // 127. Jason Bourne Saga
-  'col-oceans-trilogy':            10,   // 128. Ocean's Trilogy
-  'col-x-men-through-2015':       10,   // 129. X-Men Saga — Through 2015
-  'col-deadpool-trilogy':          9.5,  // 130. Deadpool Trilogy
-  'col-matrix-trilogy':            10,   // 131. The Matrix Trilogy
+  'col-bourne-saga':               9,    // 127. Jason Bourne Collection
+  'col-oceans-trilogy':            10,   // 128. Ocean's Collection
+  'col-x-men-through-2015':       10,   // 129. X-Men Collection — Through 2015
+  'col-deadpool-trilogy':          9.5,  // 130. Deadpool Collection
+  'col-matrix-trilogy':            10,   // 131. The Matrix Collection
   'col-john-wick':                 9,    // 132. John Wick Collection — Films 1–4
-  'col-harry-potter':              10,   // 133. Harry Potter Saga — Films 1–8
+  'col-harry-potter':              10,   // 133. Harry Potter Collection — Films 1–8
   'col-spider-verse':              9,    // 134. Spider-Man: Spider-Verse
   'col-crisis-on-infinite-earths': 10,   // 135. Justice League: Crisis on Infinite Earths
-  'col-guardians-of-the-galaxy':   10,   // 136. Guardians of the Galaxy Trilogy
-  'col-knives-out':                10,   // 137. Knives Out Trilogy
+  'col-guardians-of-the-galaxy':   10,   // 136. Guardians of the Galaxy Collection
+  'col-knives-out':                10,   // 137. Knives Out Collection
   'col-mission-impossible':        9,    // 138. Mission: Impossible Collection
   'col-james-bond-daniel-craig':   9,    // 139. James Bond — Daniel Craig Collection
   'col-the-incredibles':           9,    // 140. The Incredibles Collection

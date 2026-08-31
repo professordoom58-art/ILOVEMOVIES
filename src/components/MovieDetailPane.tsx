@@ -63,7 +63,12 @@ export const MovieDetailPane: React.FC<MovieDetailPaneProps> = ({
 
         {/* Title & Metadata & Scoreboard */}
         <div className="detail-primary-info">
-          <h1 className="detail-movie-title">{movie.title}</h1>
+          <div className="detail-title-row">
+            <h1 className="detail-movie-title">{movie.title}</h1>
+            {customGenre && (
+              <span className="card-genre-badge">{customGenre}</span>
+            )}
+          </div>
 
           <div className="detail-metadata-line">
             <span>{movie.year}</span>
@@ -79,7 +84,7 @@ export const MovieDetailPane: React.FC<MovieDetailPaneProps> = ({
                 <span>{movie.runtime}</span>
               </>
             )}
-            {movie.certification && (
+            {movie.certification && movie.certification.toLowerCase() !== 'feature' && (
               <span className="certification-badge">{movie.certification}</span>
             )}
             {movie.director && (

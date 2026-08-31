@@ -91,7 +91,7 @@ export const MovieDetailsModal: React.FC<MovieDetailsModalProps> = ({ movie, onC
                   <span>{movie.runtime}</span>
                 </>
               )}
-              {movie.certification && (
+              {movie.certification && movie.certification.toLowerCase() !== 'feature' && (
                 <span className="certification-badge">{movie.certification}</span>
               )}
             </div>

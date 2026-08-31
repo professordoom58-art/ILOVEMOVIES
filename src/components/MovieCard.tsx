@@ -8,6 +8,8 @@ interface MovieCardProps {
   onSelect: (item: MediaItem) => void;
 }
 
+const COMEDY_SPECIAL_IDS = new Set([1215439, 701687, 624932]);
+
 export const MovieCard: React.FC<MovieCardProps> = ({ item, index, isSelected, onSelect }) => {
   const [hasImageError, setHasImageError] = useState(false);
   const cardRef = useRef<HTMLButtonElement>(null);
@@ -36,6 +38,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ item, index, isSelected, o
 
   let subtitle = '';
   let badgeLabel: string | null = null;
+  const isComedySpecial = item.kind === 'movie' && COMEDY_SPECIAL_IDS.has(item.tmdbId);
 
   if (item.kind === 'collection') {
     badgeLabel = item.tag;
@@ -44,6 +47,9 @@ export const MovieCard: React.FC<MovieCardProps> = ({ item, index, isSelected, o
   } else if (item.kind === 'tv') {
     badgeLabel = 'TV SERIES';
     subtitle = item.year ? `${item.year}` : 'TV Series';
+  } else if (isComedySpecial) {
+    badgeLabel = 'COMEDY SPECIAL';
+    subtitle = item.year ? `${item.year}` : '—';
   } else {
     subtitle = item.year ? `${item.year}` : '—';
   }
@@ -55,7 +61,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ item, index, isSelected, o
   return (
     <button
       ref={cardRef}
-      className={`movie-card ${isSelected ? 'is-selected' : ''} card-${item.kind}`}
+      className={`movie-card ${isSelected ? 'is-selected' : ''} card-${item.kind}${isComedySpecial ? ' card-comedy-special' : ''}`}
       onClick={() => onSelect(item)}
       onKeyDown={handleKeyDown}
       tabIndex={0}

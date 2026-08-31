@@ -8,6 +8,8 @@ interface CarouselCardProps {
   onSelect: (item: MediaItem) => void;
 }
 
+const COMEDY_SPECIAL_IDS = new Set([1215439, 701687, 624932]);
+
 export const CarouselCard: React.FC<CarouselCardProps> = ({
   item,
   index,
@@ -27,6 +29,7 @@ export const CarouselCard: React.FC<CarouselCardProps> = ({
 
   let badgeLabel: string | null = null;
   let yearLine = '';
+  const isComedySpecial = item.kind === 'movie' && COMEDY_SPECIAL_IDS.has(item.tmdbId);
 
   if (item.kind === 'collection') {
     badgeLabel = item.tag;
@@ -37,6 +40,9 @@ export const CarouselCard: React.FC<CarouselCardProps> = ({
   } else if (item.kind === 'tv') {
     badgeLabel = 'TV';
     yearLine = item.year ? String(item.year) : 'TV Series';
+  } else if (isComedySpecial) {
+    badgeLabel = 'COMEDY SPECIAL';
+    yearLine = item.year ? String(item.year) : '—';
   } else {
     yearLine = item.year ? String(item.year) : '—';
   }
@@ -47,7 +53,7 @@ export const CarouselCard: React.FC<CarouselCardProps> = ({
 
   return (
     <button
-      className={`cc${isSelected ? ' cc--selected' : ''} card-${item.kind}`}
+      className={`cc${isSelected ? ' cc--selected' : ''} card-${item.kind}${isComedySpecial ? ' card-comedy-special' : ''}`}
       onClick={() => onSelect(item)}
       onKeyDown={handleKeyDown}
       tabIndex={0}

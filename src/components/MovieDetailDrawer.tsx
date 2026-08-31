@@ -277,7 +277,7 @@ export const MovieDetailDrawer: React.FC<MovieDetailDrawerProps> = ({
                         {currentMedia.formattedReleaseDate || currentMedia.year}
                         {currentMedia.runtime ? ` · ${currentMedia.runtime}` : ''}
                       </span>
-                      {currentMedia.certification && (
+                      {currentMedia.certification && currentMedia.certification.toLowerCase() !== 'feature' && (
                         <span className="certification-tag">{currentMedia.certification}</span>
                       )}
                     </div>

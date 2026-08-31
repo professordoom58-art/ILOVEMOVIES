@@ -132,7 +132,7 @@ function normalizeTMDBMovie(raw: TMDBMovieDetailsRaw, personalNotes?: string): M
     largePoster: posterW780 || posterW500,
     backdrop: backdropW1280,
     director: extractDirector(raw),
-    certification: ext.certification || (raw.status === 'Released' ? 'Feature' : undefined),
+    certification: ext.certification || undefined,
     cast: extractCast(raw.credits, 6),
     runtime: formatRuntime(raw.runtime),
     tagline: raw.tagline?.trim() || undefined,

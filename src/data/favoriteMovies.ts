@@ -126,24 +126,24 @@ export const FAVORITE_MEDIA: PersonalEntryConfig[] = [
   { kind: 'movie', tmdbId: 4141 },   // 122. Shoot 'Em Up (10)
   { kind: 'movie', tmdbId: 87421 },  // 123. Riddick (9)
 
-  // ── Collections & Sagas (124–148) ─────────────────────────────────────────
+  // ── Collections (124–148) ────────────────────────────────────────────────
   {
     kind: 'collection',
     id: 'col-transformers-1-3',
-    title: 'TRANSFORMERS SAGA — 1–3',
-    tag: 'SAGA',
+    title: 'TRANSFORMERS COLLECTION — 1–3',
+    tag: 'COLLECTION',
     tmdbCollectionId: 8650,
     movieIds: [1858, 8373, 38356]
-  }, // 124. Transformers Saga — Films 1–3 (9)
+  }, // 124. Transformers Collection — Films 1–3 (9)
   {
     kind: 'collection',
     id: 'col-fast-furious-1-7',
-    title: 'FAST & FURIOUS SAGA — 1–7',
-    tag: 'SAGA',
+    title: 'FAST & FURIOUS COLLECTION — 1–7',
+    tag: 'COLLECTION',
     tmdbCollectionId: 9485,
     movieIds: [9799, 584, 9615, 13804, 51497, 82992, 168259],
     favoriteMovieIds: [9615]
-  }, // 125. Fast & Furious Saga — Films 1–7 (9)
+  }, // 125. Fast & Furious Collection — Films 1–7 (9)
   {
     kind: 'collection',
     id: 'col-kill-bill',
@@ -155,43 +155,43 @@ export const FAVORITE_MEDIA: PersonalEntryConfig[] = [
   {
     kind: 'collection',
     id: 'col-bourne-saga',
-    title: 'JASON BOURNE SAGA',
-    tag: 'SAGA',
+    title: 'JASON BOURNE COLLECTION',
+    tag: 'COLLECTION',
     tmdbCollectionId: 31562,
     movieIds: [2501, 2502, 2503, 49040, 324668]
-  }, // 127. Jason Bourne Saga (9)
+  }, // 127. Jason Bourne Collection (9)
   {
     kind: 'collection',
     id: 'col-oceans-trilogy',
-    title: "OCEAN'S TRILOGY",
-    tag: 'TRILOGY',
+    title: "OCEAN'S COLLECTION",
+    tag: 'COLLECTION',
     tmdbCollectionId: 304,
     movieIds: [161, 163, 298]
-  }, // 128. Ocean's Trilogy (10)
+  }, // 128. Ocean's Collection (10)
   {
     kind: 'collection',
     id: 'col-x-men-through-2015',
-    title: 'X-MEN SAGA — THROUGH 2015',
-    tag: 'SAGA',
+    title: 'X-MEN COLLECTION — THROUGH 2015',
+    tag: 'COLLECTION',
     tmdbCollectionId: 748,
     movieIds: [36657, 36658, 36668, 49538, 127585]
-  }, // 129. X-Men Saga — Through 2015 (10)
+  }, // 129. X-Men Collection — Through 2015 (10)
   {
     kind: 'collection',
     id: 'col-deadpool-trilogy',
-    title: 'DEADPOOL TRILOGY',
-    tag: 'TRILOGY',
+    title: 'DEADPOOL COLLECTION',
+    tag: 'COLLECTION',
     tmdbCollectionId: 448150,
     movieIds: [293660, 383498, 533535]
-  }, // 130. Deadpool Trilogy (9.5)
+  }, // 130. Deadpool Collection (9.5)
   {
     kind: 'collection',
     id: 'col-matrix-trilogy',
-    title: 'THE MATRIX TRILOGY',
-    tag: 'TRILOGY',
+    title: 'THE MATRIX COLLECTION',
+    tag: 'COLLECTION',
     tmdbCollectionId: 2344,
     movieIds: [603, 604, 605]
-  }, // 131. The Matrix Trilogy (10)
+  }, // 131. The Matrix Collection (10)
   {
     kind: 'collection',
     id: 'col-john-wick',
@@ -203,11 +203,11 @@ export const FAVORITE_MEDIA: PersonalEntryConfig[] = [
   {
     kind: 'collection',
     id: 'col-harry-potter',
-    title: 'HARRY POTTER SAGA',
-    tag: 'SAGA',
+    title: 'HARRY POTTER COLLECTION',
+    tag: 'COLLECTION',
     tmdbCollectionId: 1241,
     movieIds: [671, 672, 673, 674, 675, 767, 12444, 12445]
-  }, // 133. Harry Potter Saga — Films 1–8 (10)
+  }, // 133. Harry Potter Collection — Films 1–8 (10)
   {
     kind: 'collection',
     id: 'col-spider-verse',
@@ -220,26 +220,26 @@ export const FAVORITE_MEDIA: PersonalEntryConfig[] = [
     kind: 'collection',
     id: 'col-crisis-on-infinite-earths',
     title: 'JUSTICE LEAGUE: CRISIS ON INFINITE EARTHS',
-    tag: 'TRILOGY',
+    tag: 'COLLECTION',
     movieIds: [1155089, 1209288, 1209290],
     customPosterPath: '/mcRVsjMbhFstRK9z2oGRHiIvulr.jpg'
   }, // 135. Justice League: Crisis on Infinite Earths (10)
   {
     kind: 'collection',
     id: 'col-guardians-of-the-galaxy',
-    title: 'GUARDIANS OF THE GALAXY TRILOGY',
-    tag: 'TRILOGY',
+    title: 'GUARDIANS OF THE GALAXY COLLECTION',
+    tag: 'COLLECTION',
     tmdbCollectionId: 284433,
     movieIds: [118340, 283995, 447365]
-  }, // 136. Guardians of the Galaxy Trilogy (10)
+  }, // 136. Guardians of the Galaxy Collection (10)
   {
     kind: 'collection',
     id: 'col-knives-out',
-    title: 'KNIVES OUT TRILOGY',
-    tag: 'TRILOGY',
+    title: 'KNIVES OUT COLLECTION',
+    tag: 'COLLECTION',
     tmdbCollectionId: 722971,
     movieIds: [546554, 661374, 1127110]
-  }, // 137. Knives Out Trilogy (10)
+  }, // 137. Knives Out Collection (10)
   {
     kind: 'collection',
     id: 'col-mission-impossible',
@@ -306,14 +306,14 @@ export const FAVORITE_MEDIA: PersonalEntryConfig[] = [
     kind: 'collection',
     id: 'col-star-wars-original-trilogy',
     title: 'STAR WARS: EPISODES IV–VI',
-    tag: 'TRILOGY',
+    tag: 'COLLECTION',
     movieIds: [11, 1891, 1892]
   }, // 147. Star Wars Episodes IV–VI (10)
   {
     kind: 'collection',
     id: 'col-star-wars-prequel-trilogy',
     title: 'STAR WARS: EPISODES I–III',
-    tag: 'TRILOGY',
+    tag: 'COLLECTION',
     movieIds: [1893, 1894, 1895]
   }, // 148. Star Wars Episodes I–III (8.5)
 
