@@ -1706,7 +1706,7 @@ body {
   }
 
   .collection-shelf-content {
-    padding: 5.5rem 1.25rem 1rem 1.25rem;
+    padding: 5rem 1.25rem 1rem 1.25rem;
     width: 100%;
     max-width: 100%;
     min-height: auto;
@@ -1728,22 +1728,24 @@ body {
   }
 
   .view-mode-carousel .collection-shelf-content {
-    min-height: auto;
-    padding-top: 5.5rem;
-    padding-bottom: 1rem;
+    min-height: 100dvh;
+    padding-top: calc(3.2rem + env(safe-area-inset-top, 0px));
+    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+    padding-left: 0;
+    padding-right: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
 
   .view-mode-carousel .shelf-grid-wrapper {
-    flex: none;
+    flex: 1;
     margin-bottom: 0;
-  }
-
-  .view-mode-carousel .embla-outer {
-    padding-bottom: 0;
-  }
-
-  .view-mode-carousel .embla {
-    padding: 0.5rem 0 0.5rem 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
   }
 
   /* Mobile Carousel — Large Centered Poster & Side Navigation */
@@ -1754,6 +1756,11 @@ body {
     padding-bottom: 0;
   }
 
+  .view-mode-carousel .embla {
+    padding: 0.15rem 0;
+    width: 100%;
+  }
+
   .view-mode-carousel .embla__container,
   .embla__container {
     padding-left: 0 !important;
@@ -1761,17 +1768,51 @@ body {
 
   .view-mode-carousel .embla__slide,
   .embla__slide {
-    flex: 0 0 clamp(260px, 80vw, 340px) !important;
-    min-width: 0 !important;
-    padding-left: 10px !important;
-    padding-right: 10px !important;
+    flex: 0 0 min(calc(100vw - 48px), calc((100dvh - 140px) * 2 / 3)) !important;
+    max-width: 380px !important;
+    min-width: 270px !important;
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+  }
+
+  .cc__poster {
+    border-radius: 8px;
+    margin-bottom: 0.38rem;
+  }
+
+  .cc__meta {
+    padding: 0 0.15rem;
+    gap: 0.1rem;
+  }
+
+  .cc__number-line {
+    font-size: 0.72rem;
+    line-height: 1.1;
+  }
+
+  .cc__title {
+    font-size: 0.95rem;
+    line-height: 1.2;
+  }
+
+  .cc__info-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 0.1rem;
+  }
+
+  .score-badge {
+    min-width: 28px;
+    height: 28px;
+    font-size: 0.82rem;
   }
 
   .carousel-bottom-controls {
     position: absolute;
-    top: 40%;
-    left: 6px;
-    right: 6px;
+    top: calc(min(calc(100vw - 48px), calc((100dvh - 140px) * 2 / 3)) * 0.75 + 0.15rem);
+    left: 2px;
+    right: 2px;
     transform: translateY(-50%);
     display: flex;
     justify-content: space-between;
@@ -1783,8 +1824,8 @@ body {
 
   .carousel-arrow-btn {
     pointer-events: auto;
-    width: 36px;
-    height: 36px;
+    width: 34px;
+    height: 34px;
     background-color: rgba(14, 20, 32, 0.88);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
@@ -1801,18 +1842,18 @@ body {
   }
 
   .carousel-progress-wrapper {
-    margin-top: 0.85rem;
+    margin-top: 0.5rem;
     margin-bottom: 0.25rem;
-    gap: 6px;
+    gap: 5px;
   }
 
   .carousel-progress-bar {
-    width: 20px;
+    width: 18px;
     height: 3px;
   }
 
   .carousel-progress-bar.active {
-    width: 28px;
+    width: 26px;
   }
 
   .header-search-popover {
@@ -1834,7 +1875,7 @@ body {
     top: 0;
     left: 0;
     right: 0;
-    padding: 1rem 0 0.5rem 0;
+    padding: calc(0.6rem + env(safe-area-inset-top, 0px)) 0 0.25rem 0;
     background-color: var(--bg-collection);
     z-index: 400;
     box-shadow: none !important;
@@ -1843,9 +1884,9 @@ body {
   }
 
   .header-top-row {
-    padding: 0 1rem 0.5rem 1rem;
+    padding: 0 0.85rem 0.25rem 0.85rem;
     border-bottom: none !important;
-    gap: 1rem;
+    gap: 0.5rem;
     position: relative;
     display: flex;
     align-items: center;
@@ -1853,7 +1894,7 @@ body {
   }
 
   .header-nav {
-    gap: 0.35rem;
+    gap: 4px;
     flex-shrink: 0;
     display: flex;
     align-items: center;
@@ -1865,6 +1906,10 @@ body {
   .view-mode-toggle {
     padding: 2px;
     border-radius: 6px;
+  }
+
+  .view-mode-toggle {
+    gap: 2px;
   }
 
   .search-toggle-btn,
@@ -1886,7 +1931,7 @@ body {
   }
 
   .site-title {
-    font-size: clamp(1.45rem, 5.6vw, 1.95rem);
+    font-size: clamp(1.35rem, 5.2vw, 1.85rem);
     white-space: nowrap;
     letter-spacing: -0.02em;
     line-height: 1.1;
