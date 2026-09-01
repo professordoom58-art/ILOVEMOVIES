@@ -876,14 +876,50 @@ body {
   gap: 0;
 }
 
+.detail-title-row,
+.drawer-title-row,
+.modal-title-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.45rem;
+  margin-bottom: 0.55rem;
+}
+
 .drawer-movie-title {
   font-family: var(--font-serif);
   font-size: clamp(2rem, 2.8vw, 2.75rem);
   font-weight: 500;
   color: var(--text-primary);
   line-height: 1.1;
-  margin-bottom: 0.35rem;
+  margin-bottom: 0;
   letter-spacing: -0.01em;
+}
+
+.detail-title-row .detail-movie-title,
+.drawer-title-row .drawer-movie-title,
+.modal-title-row .modal-movie-title {
+  margin-bottom: 0;
+}
+
+.card-genre-badge {
+  display: inline-flex;
+  align-items: center;
+  background-color: rgba(20, 24, 27, 0.92);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(201, 162, 39, 0.35);
+  padding: 0.16rem 0.5rem;
+  border-radius: var(--radius-sm, 4px);
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--accent-gold, #C9A227);
+  text-transform: uppercase;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  line-height: 1.25;
+  white-space: nowrap;
+  vertical-align: middle;
 }
 
 .drawer-metadata-line {
@@ -1352,28 +1388,81 @@ body {
     margin: 0 auto;
   }
 
+  .drawer-right-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+  }
+
+  .drawer-kind-pill {
+    display: inline-flex;
+    align-self: center;
+    margin: 0 auto 0.5rem auto;
+    text-align: center;
+  }
+
+  .drawer-title-row,
+  .detail-title-row,
+  .modal-title-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    width: 100%;
+    gap: 0.45rem;
+    margin-bottom: 0.55rem;
+  }
+
+  .drawer-movie-title,
+  .detail-movie-title,
+  .modal-movie-title {
+    font-size: clamp(1.5rem, 5vw, 1.85rem);
+    text-align: center;
+    width: 100%;
+    margin: 0;
+    line-height: 1.15;
+  }
+
+  .drawer-title-row .card-genre-badge,
+  .detail-title-row .card-genre-badge,
+  .modal-title-row .card-genre-badge,
+  .card-genre-badge {
+    display: inline-flex;
+    align-self: center;
+    margin: 0 auto;
+  }
+
+  .drawer-metadata-line,
+  .detail-metadata-line {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    text-align: center;
+    margin-bottom: 0.35rem;
+    width: 100%;
+  }
+
+  .drawer-director-line {
+    text-align: center;
+    width: 100%;
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.85rem;
+  }
+
+  .drawer-director-line strong {
+    color: var(--accent-terracotta);
+    font-weight: 600;
+  }
+
   .cast-grid {
     grid-template-columns: repeat(3, 1fr);
     gap: 0.75rem;
-  }
-}
-
-@media (max-width: 540px) {
-  .scoreboard-container {
-    grid-template-columns: 1fr;
-  }
-
-  .score-col {
-    border-right: none;
-    border-bottom: 1px solid var(--border-color);
-  }
-
-  .score-col:last-child {
-    border-bottom: none;
-  }
-
-  .cast-grid {
-    grid-template-columns: repeat(2, 1fr);
   }
 }
 
@@ -1990,19 +2079,54 @@ body {
     flex-direction: column;
     align-items: center;
     text-align: center;
+    width: 100%;
   }
 
-  .drawer-movie-title {
-    font-size: 1.75rem;
+  .drawer-kind-pill {
+    display: inline-flex;
+    align-self: center;
+    margin: 0 auto 0.5rem auto;
     text-align: center;
-    margin-bottom: 0.35rem;
+  }
+
+  .drawer-title-row,
+  .detail-title-row,
+  .modal-title-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    width: 100%;
+    gap: 0.45rem;
+    margin-bottom: 0.55rem;
+  }
+
+  .drawer-movie-title,
+  .detail-movie-title,
+  .modal-movie-title {
+    font-size: clamp(1.5rem, 5vw, 1.85rem);
+    text-align: center;
+    width: 100%;
+    margin: 0;
     line-height: 1.15;
   }
 
-  .drawer-metadata-line {
+  .drawer-title-row .card-genre-badge,
+  .detail-title-row .card-genre-badge,
+  .modal-title-row .card-genre-badge,
+  .card-genre-badge {
+    display: inline-flex;
+    align-self: center;
+    margin: 0 auto;
+  }
+
+  .drawer-metadata-line,
+  .detail-metadata-line {
     display: flex;
     justify-content: center;
     align-items: center;
+    flex-wrap: wrap;
     gap: 0.5rem;
     text-align: center;
     margin-bottom: 0.35rem;
@@ -2011,6 +2135,7 @@ body {
 
   .drawer-director-line {
     text-align: center;
+    width: 100%;
     font-size: 0.88rem;
     color: var(--text-secondary);
     margin-bottom: 0.85rem;
@@ -2019,10 +2144,6 @@ body {
   .drawer-director-line strong {
     color: var(--accent-terracotta);
     font-weight: 600;
-  }
-
-  .drawer-kind-pill {
-    align-self: center;
   }
 
   /* 2. Unified 3-Column Horizontal Scorecard */
@@ -2278,41 +2399,4 @@ body {
   color: var(--text-muted);
   letter-spacing: 0.02em;
   text-align: center;
-}
-
-/* Custom Genre Badge (Inside description/details panel next to title) */
-.detail-title-row,
-.drawer-title-row,
-.modal-title-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem 0.75rem;
-  margin-bottom: 0.35rem;
-}
-
-.detail-title-row .detail-movie-title,
-.drawer-title-row .drawer-movie-title,
-.modal-title-row .modal-movie-title {
-  margin-bottom: 0;
-}
-
-.card-genre-badge {
-  display: inline-flex;
-  align-items: center;
-  background-color: rgba(20, 24, 27, 0.92);
-  backdrop-filter: blur(4px);
-  border: 1px solid rgba(201, 162, 39, 0.35);
-  padding: 0.16rem 0.5rem;
-  border-radius: var(--radius-sm, 4px);
-  font-family: var(--font-sans, system-ui, sans-serif);
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  color: var(--accent-gold, #C9A227);
-  text-transform: uppercase;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
-  line-height: 1.25;
-  white-space: nowrap;
-  vertical-align: middle;
 }
